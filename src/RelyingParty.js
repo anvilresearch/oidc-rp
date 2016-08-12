@@ -1,10 +1,10 @@
 /**
  * Dependencies
  */
-const {JSONSchema,JSONDocument} = require('json-document')
+const {JSONSchema, JSONDocument} = require('json-document')
 const AuthenticationRequest = require('./AuthenticationRequest')
 const AuthenticationResponse = require('./AuthenticationResponse')
-const Session = require('./Session')
+// const Session = require('./Session')
 
 /**
  * RelyingParty Schema
@@ -21,7 +21,7 @@ const schema = new JSONSchema({
     },
     response_type: {
       type: 'string',
-      default: 'id_token token'
+      default: 'id_token token',
       enum: ['id_token token']
     },
     display: {
@@ -61,7 +61,6 @@ const schema = new JSONSchema({
  *  client.logout()
  */
 class RelyingParty extends JSONDocument {
-
   /**
    * fromProvider
    *
@@ -78,13 +77,14 @@ class RelyingParty extends JSONDocument {
       .then(client => client.discover())
       .then(client => client.jwks())
       .then(client => client)
-      .catch(err => {})
+      .catch(/* err => {} */)
   }
 
   /**
    * Constructor
    */
   constructor (options = {}) {
+    super()
     if (!options.issuer) {
       throw new Error('RelyingParty must have an issuer')
     }
@@ -150,14 +150,13 @@ class RelyingParty extends JSONDocument {
    * Validate Response
    */
   validateResponse (uri) {
-    AuthenticationResponse.validate(url)
+    AuthenticationResponse.validate(uri)
   }
 
   /**
    * UserInfo
    */
   userinfo () {}
-
 
   /**
    * Is Authenticated
@@ -169,4 +168,12 @@ class RelyingParty extends JSONDocument {
    */
   logout () {}
 
+  /**
+   * Schema
+   */
+  static get schema () {
+    return schema
+  }
 }
+
+module.exports = RelyingParty

@@ -2,7 +2,6 @@
  * Local dependencies
  */
 const {JWS} = require('?')
-const {JSONSchema} = require('json-document')
 
 /**
  * IDToken Schema
@@ -18,7 +17,6 @@ const schema = JWS.schema.extend({
  * IDToken
  */
 class IDToken extends JWS {
-
   /**
    * Schema
    */

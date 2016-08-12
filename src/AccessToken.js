@@ -2,7 +2,6 @@
  * Local dependencies
  */
 const {JWS} = require('?')
-const {JSONSchema} = require('json-document')
 
 /**
  * AccessToken Schema
