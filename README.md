@@ -23,8 +23,8 @@ This package is a work in progress, dependent on other ongoing projects. Code
 contained herein will be completed when the following dependencies are ready to
 release:
 
-- anvilresearch/webcrypto
-- anvilresearch/jose
+- [anvilresearch/webcrypto](https://github.com/anvilresearch/webcrypto)
+- [anvilresearch/jose](https://github.com/anvilresearch/jose)
 
 The current contents of the respository should be considered a "sketch".
 
