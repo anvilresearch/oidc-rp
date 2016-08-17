@@ -1,10 +1,10 @@
 /**
  * Dependencies
  */
-const {JSONSchema,JSONDocument} = require('json-document')
+const {JSONSchema, JSONDocument} = require('json-document')
 const AuthenticationRequest = require('./AuthenticationRequest')
 const AuthenticationResponse = require('./AuthenticationResponse')
-const Session = require('./Session')
+// const Session = require('./Session')
 
 /**
  * RelyingParty Schema
@@ -21,7 +21,7 @@ const schema = new JSONSchema({
     },
     response_type: {
       type: 'string',
-      default: 'id_token token'
+      default: 'id_token token',
       enum: ['id_token token']
     },
     display: {
@@ -61,6 +61,18 @@ const schema = new JSONSchema({
  *  client.logout()
  */
 class RelyingParty extends JSONDocument {
+  /**
+   * Constructor
+   */
+  constructor (options = {}) {
+    super()
+    if (!options.issuer) {
+      throw new Error('RelyingParty must have an issuer')
+    }
+    this.issuer = options.issuer
+    this.client_id = options.client_id
+    this.persistence = options.persistence || RelyingParty.defaultStore()
+  }
 
   /**
    * fromProvider
@@ -78,19 +90,14 @@ class RelyingParty extends JSONDocument {
       .then(client => client.discover())
       .then(client => client.jwks())
       .then(client => client)
-      .catch(err => {})
+      .catch(/* err => {} */)
   }
 
   /**
-   * Constructor
+   * Schema
    */
-  constructor (options = {}) {
-    if (!options.issuer) {
-      throw new Error('RelyingParty must have an issuer')
-    }
-    this.issuer = options.issuer
-    this.client_id = options.client_id
-    this.persistence = options.persistence || RelyingParty.defaultStore()
+  static get schema () {
+    return schema
   }
 
   /**
@@ -150,14 +157,13 @@ class RelyingParty extends JSONDocument {
    * Validate Response
    */
   validateResponse (uri) {
-    AuthenticationResponse.validate(url)
+    AuthenticationResponse.validate(uri)
   }
 
   /**
    * UserInfo
    */
   userinfo () {}
-
 
   /**
    * Is Authenticated
@@ -168,5 +174,6 @@ class RelyingParty extends JSONDocument {
    * Logout
    */
   logout () {}
-
 }
+
+module.exports = RelyingParty
