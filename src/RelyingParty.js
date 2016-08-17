@@ -62,6 +62,19 @@ const schema = new JSONSchema({
  */
 class RelyingParty extends JSONDocument {
   /**
+   * Constructor
+   */
+  constructor (options = {}) {
+    super()
+    if (!options.issuer) {
+      throw new Error('RelyingParty must have an issuer')
+    }
+    this.issuer = options.issuer
+    this.client_id = options.client_id
+    this.persistence = options.persistence || RelyingParty.defaultStore()
+  }
+
+  /**
    * fromProvider
    *
    * @description
@@ -81,16 +94,10 @@ class RelyingParty extends JSONDocument {
   }
 
   /**
-   * Constructor
+   * Schema
    */
-  constructor (options = {}) {
-    super()
-    if (!options.issuer) {
-      throw new Error('RelyingParty must have an issuer')
-    }
-    this.issuer = options.issuer
-    this.client_id = options.client_id
-    this.persistence = options.persistence || RelyingParty.defaultStore()
+  static get schema () {
+    return schema
   }
 
   /**
@@ -167,13 +174,6 @@ class RelyingParty extends JSONDocument {
    * Logout
    */
   logout () {}
-
-  /**
-   * Schema
-   */
-  static get schema () {
-    return schema
-  }
 }
 
 module.exports = RelyingParty
