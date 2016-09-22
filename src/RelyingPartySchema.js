@@ -25,7 +25,7 @@ const RelyingPartySchema = new JSONSchema({
       type: 'object',
       properties: {
         name: { type: 'string' },
-        issuer: { type: 'string', format: 'url' },
+        url: { type: 'string', format: 'url' },
         // NOTE:
         // OpenID Configuration (discovery response) and JSON Web Keys Set for an
         // issuer can be cached here. However the cache should not be persisted or
