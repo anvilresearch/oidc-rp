@@ -22,6 +22,8 @@ const RelyingPartySchema = require('./RelyingPartySchema')
  *    params: {
  *      authenticate: {
  *        response_type: 'code',
+ *        display: 'popup',
+ *        popup: { width: 400, height: 300 },
  *        scope: 'openid profile email'
  *      },
  *      register: {
