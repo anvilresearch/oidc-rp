@@ -284,9 +284,38 @@ class RelyingParty extends JSONDocument {
   }
 
   /**
-   * UserInfo
+   * userinfo
+   *
+   * @description Promises the authenticated user's claims.
+   * @returns {Promise}
    */
-  userinfo () {}
+  userinfo () {
+    try {
+      let configuration = this.provider.configuration
+
+      assert(configuration, 'OpenID Configuration is not initialized.')
+      assert(configuration.registration_endpoint, 'OpenID Configuration is missing registration_endpoint.')
+
+      let uri = configuration.userinfo_endpoint
+      let access_token = this.session.access_token
+
+      assert(access_token, 'Missing access token.')
+
+      let headers = new Headers({
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${access_token}`
+      })
+
+      return fetch(uri, {headers})
+        .then(status(200))
+        .then(response => {
+          return response.json()
+        })
+
+    } catch (error) {
+      return Promise.reject(error)
+    }
+  }
 
   /**
    * Is Authenticated
