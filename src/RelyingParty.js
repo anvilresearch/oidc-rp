@@ -222,12 +222,30 @@ class RelyingParty extends JSONDocument {
   }
 
   /**
-   * Keys
+   * jwks
    *
    * @description Promises the issuer's JWK Set.
    * @returns {Promise}
    */
-  keys () {}
+  jwks () {
+    try {
+      let configuration = this.provider.configuration
+
+      assert(configuration, 'OpenID Configuration is not initialized.')
+      assert(configuration.jwks_uri, 'OpenID Configuration is missing jwks_uri.')
+
+      let uri = configuration.jwks_uri
+
+      return fetch(uri)
+        .then(status(200))
+        .then(response => {
+          return this.provider.jwks = response.json()
+        })
+
+    } catch (error) {
+      return Promise.reject(error)
+    }
+  }
 
   /**
    * Authenticate
