@@ -6,6 +6,7 @@
  * FormUrlEncoded
  */
 class FormUrlEncoded {
+
   /**
    * Encode
    *
