@@ -197,7 +197,29 @@ class RelyingParty extends JSONDocument {
    * @description Register's a client with provider as a Relying Party
    * @returns {Promise}
    */
-  register () {}
+  register () {
+    try {
+      let configuration = this.provider.configuration
+
+      assert(configuration, 'OpenID Configuration is not initialized.')
+      assert(configuration.registration_endpoint, 'OpenID Configuration is missing registration_endpoint.')
+
+      let uri = configuration.registration_endpoint
+      let method = 'post'
+      let headers = new Headers({ 'Content-Type': 'application/json' })
+      let params = this.params.register
+      let body = JSON.stringify(Object.assign({}, params, options))
+
+      return fetch(uri, {method, headers, body})
+        .then(status)
+        .then(response => {
+          return response.json()
+        })
+
+    } catch (error) {
+      return Promise.reject(error)
+    }
+  }
 
   /**
    * Keys
