@@ -173,7 +173,23 @@ class RelyingParty extends JSONDocument {
    * @description Promises the issuer's OpenID Configuration.
    * @returns {Promise}
    */
-  discover () {}
+  discover () {
+    try {
+      let issuer = this.provider.url
+      let endpoint = '.well-known/openid-configuration'
+
+      assert(issuer, 'OpenID Provider configuration must include issuer')
+
+      return fetch(`${issuer}/${endpoint}`)
+        .then(status(200))
+        .then(response => {
+          return this.provider.configuration = response.json()
+        })
+
+    } catch (error) {
+      return Promise.reject(error)
+    }
+  }
 
   /**
    * Register
