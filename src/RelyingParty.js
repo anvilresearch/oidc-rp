@@ -15,15 +15,33 @@ const RelyingPartySchema = require('./RelyingPartySchema')
  *
  * @example
  *  let client = RelyingParty({
- *    issuer: 'https://issuer.com',
- *    client_id: 'uuid'
- *    response_type: 'id_token',
- *    display: 'popup',
- *    scope: 'openid profile email'
+ *    provider: {
+ *      name: 'Anvil Research, Inc.',
+ *      url: 'https://forge.anvil.io'
+ *    },
+ *    params: {
+ *      authenticate: {
+ *        response_type: 'code',
+ *        scope: 'openid profile email'
+ *      },
+ *      register: {
+ *        client_name: 'Example',
+ *        client_uri: 'https://example.com',
+ *        logo_uri: 'https://example.com/assets/logo.png',
+ *        redirect_uris: ['https://app.example.com/callback'],
+ *        response_types: ['code', 'code id_token token'],
+ *        grant_types: ['authorization_code'],
+ *        default_max_age: 7200,
+ *        post_logout_redirect_uris: ['https://app.example.com']
+ *      }
+ *    },
+ *    registration: {
+ *      // if you have it saved somewhere
+ *    }
  *  })
  *
  *  client.discover() => Promise
- *  client.keys() => Promise
+ *  client.jwks() => Promise
  *  client.authenticate()
  *  client.authenticateUri()
  *  client.validateResponse(uri) => Promise
