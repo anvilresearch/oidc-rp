@@ -15,7 +15,15 @@ class FormUrlEncoded {
    * @param {Object} data
    * @returns {string}
    */
-  static encode (data) {}
+  static encode (data) {
+     let pairs = []
+
+     Object.keys(data).forEach(function (key) {
+       pairs.push(encodeURIComponent(key) + '=' + encodeURIComponent(obj[key]))
+     })
+
+     return pairs.join('&')
+  }
 
   /**
    * Decode
@@ -26,7 +34,19 @@ class FormUrlEncoded {
    * @param {string} data
    * @returns {Object}
    */
-  static decode (data) {}
+  static decode (data) {
+    let obj = {}
+
+    str.split('&').forEach(function (property) {
+      let pair = property.split('=')
+      let key = decodeURIComponent(pair[0])
+      let val = decodeURIComponent(pair[1])
+
+      obj[key] = val
+    })
+
+    return obj
+  }
 }
 
 /**
