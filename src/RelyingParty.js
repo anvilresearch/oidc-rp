@@ -8,31 +8,98 @@ const AuthenticationResponse = require('./AuthenticationResponse')
 
 /**
  * RelyingParty Schema
+ *
+ * This schema initializes and verifies Relying Party client configuration.
+ * RelyingParty objects can be persisted and rehydrated. By encapsulating this data in
+ * it's own class, it's possible to have multiple RP configurations running
+ * simultaneously.
  */
 const schema = new JSONSchema({
   type: 'object',
   properties: {
-    issuer: {
-      type: 'string',
-      format: 'uri'
+
+    /**
+     * provider
+     *
+     * Information about the provider, including issuer URL, human readable name,
+     * and any configuration or provider metadata retrieved from the OP.
+     */
+    provider: {
+      type: 'object',
+      properties: {
+        name: { type: 'string' },
+        issuer: { type: 'string', format: 'url' },
+        // NOTE:
+        // OpenID Configuration (discovery response) and JSON Web Keys Set for an
+        // issuer can be cached here. However the cache should not be persisted or
+        // relied upon.
+        //
+        // configuration: {}, // .well-known/openid-configuration
+        // jwks: {}           // /jwks
+      },
+      required: ['url']
     },
-    client_id: {
-      type: 'string'
+
+    /**
+     * params
+     *
+     * Default request parameters for authentication and dynamic registration requests.
+     * These values can be extended or overridden via arguments to the respective
+     * request methods.
+     *
+     * These are part of the relying party client configuration and can be serialized
+     * and persisted.
+     */
+    params: {
+      type: 'object',
+      properties: {
+
+        /**
+         * Default authentication request parameters
+         */
+        authenticate: {
+          type: 'object',
+          properties: {
+            response_type: {
+              type: 'string',
+              default: 'id_token token' // browser detection
+              enum: [
+                'code',
+                'token',
+                'id_token token',
+                'id_token token code'
+              ]
+            },
+            display: {
+              type: 'string',
+              default: 'page',
+              enum: [
+                'page',
+                'popup'
+              ]
+            },
+            scope: {
+              type: ['string', 'array'],
+              default: ['openid']
+            }
+          }
+        },
+
+        /**
+         * Default client registration parameters
+         */
+        register: {}
+      }
     },
-    response_type: {
-      type: 'string',
-      default: 'id_token token',
-      enum: ['id_token token']
-    },
-    display: {
-      type: 'string',
-      default: 'page',
-      enum: ['page', 'popup']
-    },
-    scope: {
-      type: ['string', 'array'],
-      default: ['openid']
-    }
+
+    /**
+     * registration
+     *
+     * This is the client registration response from dynamic registration. It should
+     * always reflect the client configuration on the openid provider. A client access
+     * token is stored here
+     */
+    registration: ClientMetadataSchema
   },
   required: ['issuer']
 })
@@ -85,12 +152,12 @@ class RelyingParty extends JSONDocument {
    * @returns Promise
    */
   static fromProvider (options) {
-    return Promise
-      .resolve(new RelyingParty(options))
-      .then(client => client.discover())
-      .then(client => client.jwks())
-      .then(client => client)
-      .catch(/* err => {} */)
+    let client = new RelyingParty(options)
+
+    return Promise.all([
+      client.discover(),
+      client.keys()
+    ]).then(() => client)
   }
 
   /**
