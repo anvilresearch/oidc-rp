@@ -18,28 +18,29 @@ const RelyingPartySchema = require('./RelyingPartySchema')
  *    provider: {
  *      name: 'Anvil Research, Inc.',
  *      url: 'https://forge.anvil.io'
+ *      // configuration
+ *      // jwks
  *    },
- *    params: {
- *      authenticate: {
- *        response_type: 'code',
- *        display: 'popup',
- *        popup: { width: 400, height: 300 },
- *        scope: 'openid profile email'
- *      },
- *      register: {
- *        client_name: 'Example',
- *        client_uri: 'https://example.com',
- *        logo_uri: 'https://example.com/assets/logo.png',
- *        redirect_uris: ['https://app.example.com/callback'],
- *        response_types: ['code', 'code id_token token'],
- *        grant_types: ['authorization_code'],
- *        default_max_age: 7200,
- *        post_logout_redirect_uris: ['https://app.example.com']
- *      }
+ *    authenticate: {
+ *      response_type: 'code',
+ *      display: 'popup',
+ *      popup: { width: 400, height: 300 },
+ *      scope: 'openid profile email'
+ *    },
+ *    register: {
+ *      client_name: 'Example',
+ *      client_uri: 'https://example.com',
+ *      logo_uri: 'https://example.com/assets/logo.png',
+ *      redirect_uris: ['https://app.example.com/callback'],
+ *      response_types: ['code', 'code id_token token'],
+ *      grant_types: ['authorization_code'],
+ *      default_max_age: 7200,
+ *      post_logout_redirect_uris: ['https://app.example.com']
  *    },
  *    registration: {
  *      // if you have it saved somewhere
- *    }
+ *    },
+ *    store: localStorage || req.session
  *  })
  *
  *  client.discover() => Promise
@@ -196,7 +197,8 @@ class RelyingParty extends JSONDocument {
    * @returns string
    */
   authenticateUri (options) {
-    return AuthenticationRequest.uri(this)
+    let request = new AuthenticationRequest(this)
+    return request.uri(options)
   }
 
   /**
