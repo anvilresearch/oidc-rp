@@ -52,6 +52,31 @@ class AuthenticationRequest {
   }
 
   /**
+   * submit
+   */
+  submit (options) {
+    let authenticate = this.authenticate
+
+    assert(authenticate, 'RelyingParty must default authentication parameters.')
+
+    this.uri(options).then(uri => {
+      // detect runtime environment (browser vs Node.js)
+      // and behave accordingly.
+      //
+      // should this throw if called in Node.js?
+
+      if (authenticate.display === 'popup') {
+        let {width, height} = this.popup
+        // window name should be some kind of client identifier
+        window.open(uri, 'rp', AuthenticationRequest.popup(width, height))
+      } else {
+        window.location = uri
+      }
+
+    })
+  }
+
+  /**
    * uri
    */
   uri (options) {
