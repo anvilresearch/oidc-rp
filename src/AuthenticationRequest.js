@@ -1,6 +1,8 @@
 /**
  * Dependencies
  */
+const Nonce = require('./Nonce')
+const FormUrlencoded = require('./FormUrlencoded')
 
 /**
  * Authentication Request
@@ -12,6 +14,9 @@ class AuthenticationRequest {
    */
   constructor (rp) {
     Object.assign(this, rp)
+    assert(this.provider, 'Provider must be configured for RelyingParty')
+    assert(this.provider.url, 'Provider URL must be configured for RelyingParty')
+    assert(this.store, 'A session store must be configured for RelyingParty')
   }
 
   /**
@@ -44,6 +49,35 @@ class AuthenticationRequest {
     return 'width=' + popupWidth + ',height=' + popupHeight + ',' +
     'left=' + popupLeft + ',top=' + popupTop + ',' +
     'dialog=yes,dependent=yes,scrollbars=yes,location=yes'
+  }
+
+  /**
+   * uri
+   */
+  uri (options) {
+    let store = this.store
+    let provider = this.provider
+    let configuration = provider.configuration
+    assert(configuration, 'OpenID Configuration required. Invoke the discover method.')
+
+    let endpoint = configuration.authorize_endpoint
+    assert(endpoint, 'OpenID Configuration does not specify the authorize endpoint.')
+
+    let registration = this.registration
+    assert(registration, 'Registration must be provided for the RelyingParty.')
+
+    let client_id = registration.client_id
+
+    let defaults = provider.authenticate
+    let params = Object.assign({client_id}, defaults, options)
+
+    params.nonce = Nonce.generate(16)
+    store['${client_id}:nonce'] = params.nonce
+
+    let url = new URL(endpoint)
+    url.search = FormUrlencoded.encode(params)
+
+    return url.href
   }
 
 }
