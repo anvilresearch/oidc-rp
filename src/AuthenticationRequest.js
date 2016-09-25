@@ -62,9 +62,7 @@ class AuthenticationRequest {
     this.uri(options).then(uri => {
       // detect runtime environment (browser vs Node.js)
       // and behave accordingly.
-      //
       // should this throw if called in Node.js?
-
       if (authenticate.display === 'popup') {
         let {width, height} = this.popup
         // window name should be some kind of client identifier
@@ -72,7 +70,6 @@ class AuthenticationRequest {
       } else {
         window.location = uri
       }
-
     })
   }
 
