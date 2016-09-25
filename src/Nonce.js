@@ -31,4 +31,4 @@ class Nonce {
 /**
  * Export
  */
-export default Nonce
+module.exports = Nonce
