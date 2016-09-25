@@ -24,7 +24,6 @@ const RelyingPartySchema = require('./RelyingPartySchema')
  *    authenticate: {
  *      response_type: 'code',
  *      display: 'popup',
- *      popup: { width: 400, height: 300 },
  *      scope: 'openid profile email'
  *    },
  *    register: {
@@ -40,7 +39,8 @@ const RelyingPartySchema = require('./RelyingPartySchema')
  *    registration: {
  *      // if you have it saved somewhere
  *    },
- *    store: localStorage || req.session
+ *    store: localStorage || req.session,
+ *    popup: { width: 400, height: 300 }
  *  })
  *
  *  client.discover() => Promise
@@ -52,18 +52,6 @@ const RelyingPartySchema = require('./RelyingPartySchema')
  *  client.logout()
  */
 class RelyingParty extends JSONDocument {
-  /**
-   * Constructor
-   */
-  constructor (options = {}) {
-    super()
-    if (!options.issuer) {
-      throw new Error('RelyingParty must have an issuer')
-    }
-    this.issuer = options.issuer
-    this.client_id = options.client_id
-    this.persistence = options.persistence || RelyingParty.defaultStore()
-  }
 
   /**
    * fromProvider
@@ -183,7 +171,8 @@ class RelyingParty extends JSONDocument {
    * @returns Promise
    */
   authenticate (options) {
-    return AuthenticationRequest.send(this)
+    let request = new AuthenticationRequest(this)
+    return request.submit(options)
   }
 
   /**
@@ -205,7 +194,8 @@ class RelyingParty extends JSONDocument {
    * Validate Response
    */
   validateResponse (uri) {
-    AuthenticationResponse.validate(uri)
+    let response = new AuthenticationResponse(this)
+    return response.validateResponse(uri)
   }
 
   /**
