@@ -82,7 +82,7 @@ class AuthenticationRequest {
     let configuration = provider.configuration
     assert(configuration, 'OpenID Configuration required. Invoke the discover method.')
 
-    let endpoint = configuration.authorize_endpoint
+    let endpoint = configuration.authorization_endpoint
     assert(endpoint, 'OpenID Configuration does not specify the authorize endpoint.')
 
     let registration = this.registration
