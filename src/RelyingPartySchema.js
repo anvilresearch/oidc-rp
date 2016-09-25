@@ -25,7 +25,7 @@ const RelyingPartySchema = new JSONSchema({
       type: 'object',
       properties: {
         name: { type: 'string' },
-        url: { type: 'string', format: 'url' },
+        url: { type: 'string', format: 'uri' },
         // NOTE:
         // OpenID Configuration (discovery response) and JSON Web Keys Set for an
         // issuer can be cached here. However the cache should not be persisted or
@@ -59,7 +59,7 @@ const RelyingPartySchema = new JSONSchema({
           properties: {
             response_type: {
               type: 'string',
-              default: 'id_token token' // browser detection
+              default: 'id_token token', // browser detection
               enum: [
                 'code',
                 'token',
@@ -96,7 +96,7 @@ const RelyingPartySchema = new JSONSchema({
      * always reflect the client configuration on the openid provider. A client access
      * token is stored here
      */
-    registration: ClientMetadataSchema
+    registration: {}// ClientMetadataSchema
   },
   required: ['issuer']
 })
