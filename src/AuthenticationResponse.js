@@ -64,7 +64,7 @@ class AuthenticationResponse {
         let {payload: {nonce, at_hash}} = idJwt
 
         // validate nonce
-        if (Nonce.verify(nonce, store[`${client_id}:nonce`]) {
+        if (Nonce.verify(nonce, store[`${client_id}:nonce`])) {
           return Promise.reject(new Error('Invalid nonce'))
         }
 
@@ -79,4 +79,4 @@ class AuthenticationResponse {
 /**
  * Export
  */
-export default AuthenticationResponse
+module.exports = AuthenticationResponse
