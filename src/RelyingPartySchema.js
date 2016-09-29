@@ -38,7 +38,7 @@ const RelyingPartySchema = new JSONSchema({
     },
 
     /**
-     * params
+     * defaults
      *
      * Default request parameters for authentication and dynamic registration requests.
      * These values can be extended or overridden via arguments to the respective
@@ -47,7 +47,7 @@ const RelyingPartySchema = new JSONSchema({
      * These are part of the relying party client configuration and can be serialized
      * and persisted.
      */
-    params: {
+    defaults: {
       type: 'object',
       properties: {
 

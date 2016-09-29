@@ -122,7 +122,7 @@ class RelyingParty extends JSONDocument {
       let uri = configuration.registration_endpoint
       let method = 'post'
       let headers = new Headers({ 'Content-Type': 'application/json' })
-      let params = this.params.register
+      let params = this.defaults.register
       let body = JSON.stringify(Object.assign({}, params, options))
 
       return fetch(uri, {method, headers, body})
