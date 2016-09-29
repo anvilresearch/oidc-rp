@@ -17,6 +17,7 @@
   },
   "homepage": "https://github.com/anvilresearch/oidc-rp#readme",
   "dependencies": {
+    "base64url": "^2.0.0",
     "node-fetch": "^1.6.3",
     "urlutils": "0.0.3"
   }
