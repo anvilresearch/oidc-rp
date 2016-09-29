@@ -84,17 +84,25 @@ class AuthenticationRequest {
     let store = this.store
     let provider = this.provider
     let configuration = provider.configuration
-    assert(configuration, 'OpenID Configuration required. Invoke the discover method.')
+
+    assert(
+      configuration,
+      'OpenID Configuration required. Invoke the discover method.'
+    )
 
     let endpoint = configuration.authorization_endpoint
-    assert(endpoint, 'OpenID Configuration does not specify the authorize endpoint.')
+
+    assert(
+      endpoint,
+      'OpenID Configuration does not specify the authorize endpoint.'
+    )
 
     let registration = this.registration
     assert(registration, 'Registration must be provided for the RelyingParty.')
 
     let client_id = registration.client_id
 
-    let defaults = provider.authenticate
+    let defaults = this.defaults.authenticate
     let params = Object.assign({client_id}, defaults, options)
 
     return this.nonce().then(nonce => {
@@ -117,7 +125,7 @@ class AuthenticationRequest {
 
     let namespace = this.registration.client_id
     let key = `${namespace}:nonce`
-    let value = crypto.getRandomValues(new Uint8Array(length)) // random is uint8array
+    let value = crypto.getRandomValues(new Uint8Array(length))
     let serialized = ab2str(value.buffer)
     this.store[key] = serialized
 
