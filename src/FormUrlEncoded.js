@@ -20,7 +20,7 @@ class FormUrlEncoded {
      let pairs = []
 
      Object.keys(data).forEach(function (key) {
-       pairs.push(encodeURIComponent(key) + '=' + encodeURIComponent(obj[key]))
+       pairs.push(encodeURIComponent(key) + '=' + encodeURIComponent(data[key]))
      })
 
      return pairs.join('&')
