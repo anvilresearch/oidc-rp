@@ -1,6 +1,9 @@
 /**
  * Dependencies
  */
+const assert = require('assert')
+const fetch = require('node-fetch')
+const {Request, Headers} = fetch
 const {JSONSchema, JSONDocument} = require('json-document')
 const AuthenticationRequest = require('./AuthenticationRequest')
 const AuthenticationResponse = require('./AuthenticationResponse')
@@ -93,9 +96,9 @@ class RelyingParty extends JSONDocument {
       assert(issuer, 'OpenID Provider configuration must include issuer')
 
       return fetch(`${issuer}/${endpoint}`)
-        .then(status(200))
+        //.then(status(200))
         .then(response => {
-          return this.provider.configuration = response.json()
+          return response.json().then(json => this.provider.configuration = json)
         })
 
     } catch (error) {
@@ -109,7 +112,7 @@ class RelyingParty extends JSONDocument {
    * @description Register's a client with provider as a Relying Party
    * @returns {Promise}
    */
-  register () {
+  register (options) {
     try {
       let configuration = this.provider.configuration
 
@@ -123,9 +126,9 @@ class RelyingParty extends JSONDocument {
       let body = JSON.stringify(Object.assign({}, params, options))
 
       return fetch(uri, {method, headers, body})
-        .then(status)
+        //.then(status)
         .then(response => {
-          return response.json()
+          return response.json().then(json => this.registration = json)
         })
 
     } catch (error) {
@@ -149,9 +152,9 @@ class RelyingParty extends JSONDocument {
       let uri = configuration.jwks_uri
 
       return fetch(uri)
-        .then(status(200))
+        //.then(status(200))
         .then(response => {
-          return this.provider.jwks = response.json()
+          return response.json().then(json => this.provider.jwks = json)
         })
 
     } catch (error) {
