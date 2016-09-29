@@ -118,7 +118,7 @@ class AuthenticationRequest {
     let namespace = this.registration.client_id
     let key = `${namespace}:nonce`
     let value = crypto.getRandomValues(new Uint8Array(length)) // random is uint8array
-    ket serialized = ab2str(value.buffer)
+    let serialized = ab2str(value.buffer)
     this.store[key] = serialized
 
     return crypto.subtle.digest({
