@@ -57,6 +57,10 @@ const RelyingPartySchema = new JSONSchema({
         authenticate: {
           type: 'object',
           properties: {
+            redirect_uri: {
+              type: 'string',
+              format: 'uri'
+            },
             response_type: {
               type: 'string',
               default: 'id_token token', // browser detection
