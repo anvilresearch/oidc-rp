@@ -15,5 +15,8 @@
   "bugs": {
     "url": "https://github.com/anvilresearch/oidc-rp/issues"
   },
-  "homepage": "https://github.com/anvilresearch/oidc-rp#readme"
+  "homepage": "https://github.com/anvilresearch/oidc-rp#readme",
+  "dependencies": {
+    "urlutils": "0.0.3"
+  }
 }
