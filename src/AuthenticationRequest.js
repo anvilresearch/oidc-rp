@@ -1,8 +1,12 @@
 /**
  * Dependencies
  */
-const Nonce = require('./Nonce')
+const assert = require('assert')
+const base64url = require('base64url')
+const crypto = require('webcrypto')
+const {ab2str, ab2buf, hex} = require('./encodings')
 const FormUrlencoded = require('./FormUrlencoded')
+const URL = require('urlutils')
 
 /**
  * Authentication Request
@@ -93,13 +97,36 @@ class AuthenticationRequest {
     let defaults = provider.authenticate
     let params = Object.assign({client_id}, defaults, options)
 
-    params.nonce = Nonce.generate(16)
-    store['${client_id}:nonce'] = params.nonce
+    return this.nonce().then(nonce => {
+      params.nonce = nonce
+      store['${client_id}:nonce'] = params.nonce
 
-    let url = new URL(endpoint)
-    url.search = FormUrlencoded.encode(params)
+      let url = new URL(endpoint)
+      url.search = FormUrlencoded.encode(params)
 
-    return url.href
+      return url.href
+    })
+  }
+
+  /**
+   * nonce
+   */
+  nonce (length = 16) {
+    assert(this.registration, 'Missing client registration.')
+    assert(this.registration.client_id, 'Client registration is missing client_id.')
+
+    let namespace = this.registration.client_id
+    let key = `${namespace}:nonce`
+    let value = crypto.getRandomValues(new Uint8Array(length)) // random is uint8array
+    ket serialized = ab2str(value.buffer)
+    this.store[key] = serialized
+
+    return crypto.subtle.digest({
+      name: 'SHA-256'
+    }, value).then(hash => {
+      let buffer = ab2buf(hash)
+      return base64url(buffer.toString('hex'))
+    })
   }
 
 }
