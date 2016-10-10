@@ -31,8 +31,8 @@ const RelyingPartySchema = new JSONSchema({
         // issuer can be cached here. However the cache should not be persisted or
         // relied upon.
         //
-        // configuration: {}, // .well-known/openid-configuration
-        // jwks: {}           // /jwks
+        configuration: {}, // .well-known/openid-configuration
+        jwks: {}           // /jwks
       },
       required: ['url']
     },
