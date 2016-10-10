@@ -5,6 +5,7 @@ const assert = require('assert')
 const fetch = require('node-fetch')
 const {Request, Headers} = fetch
 const {JSONSchema, JSONDocument} = require('json-document')
+const {JWKSet} = require('jose')
 const AuthenticationRequest = require('./AuthenticationRequest')
 const AuthenticationResponse = require('./AuthenticationResponse')
 const RelyingPartySchema = require('./RelyingPartySchema')
@@ -154,7 +155,10 @@ class RelyingParty extends JSONDocument {
       return fetch(uri)
         //.then(status(200))
         .then(response => {
-          return response.json().then(json => this.provider.jwks = json)
+          return response
+            .json()
+            .then(json => JWKSet.importKeys(json))
+            .then(jwks => this.provider.jwks = jwks)
         })
 
     } catch (error) {
