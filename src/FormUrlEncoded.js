@@ -38,7 +38,7 @@ class FormUrlEncoded {
   static decode (data) {
     let obj = {}
 
-    str.split('&').forEach(function (property) {
+    data.split('&').forEach(function (property) {
       let pair = property.split('=')
       let key = decodeURIComponent(pair[0])
       let val = decodeURIComponent(pair[1])
