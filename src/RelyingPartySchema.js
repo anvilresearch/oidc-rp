@@ -100,9 +100,16 @@ const RelyingPartySchema = new JSONSchema({
      * always reflect the client configuration on the openid provider. A client access
      * token is stored here
      */
-    registration: {}// ClientMetadataSchema
-  },
-  required: ['issuer']
+    registration: {},// ClientMetadataSchema
+
+    /**
+     * store
+     */
+    store: {
+      type: 'object',
+      default: {}
+    }
+  }
 })
 
 /**
