@@ -17,6 +17,7 @@ class AuthenticationRequest {
    * Constructor
    */
   constructor (rp) {
+    // TODO could we make use of Proxy instead of shallow copying?
     Object.assign(this, rp)
     assert(this.provider, 'Provider must be configured for RelyingParty')
     assert(this.provider.url, 'Provider URL must be configured for RelyingParty')
@@ -101,7 +102,6 @@ class AuthenticationRequest {
     assert(registration, 'Registration must be provided for the RelyingParty.')
 
     let client_id = registration.client_id
-
     let defaults = this.defaults.authenticate
     let params = Object.assign({client_id}, defaults, options)
 
