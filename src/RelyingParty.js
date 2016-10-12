@@ -84,6 +84,23 @@ class RelyingParty extends JSONDocument {
   }
 
   /**
+   * register
+   */
+  static register (issuer, registration, options) {
+    let rp = new RelyingParty({
+      provider: { url: issuer },
+      defaults: Object.assign({}, options.defaults),
+      store: options.store
+    })
+
+    return Promise.resolve()
+      .then(() => rp.discover())
+      .then(() => rp.jwks())
+      .then(() => rp.register(registration))
+      .then(() => rp)
+  }
+
+  /**
    * Discover
    *
    * @description Promises the issuer's OpenID Configuration.
