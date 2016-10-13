@@ -4,7 +4,7 @@
 const assert = require('assert')
 const base64url = require('base64url')
 const crypto = require('webcrypto')
-const {ab2str, ab2buf, hex} = require('./encodings')
+const {TextDecoder} = require('text-encoding')
 const FormUrlencoded = require('./FormUrlencoded')
 const URL = require('urlutils')
 
@@ -126,16 +126,34 @@ class AuthenticationRequest {
     let namespace = this.registration.client_id
     let key = `${namespace}:nonce`
     let value = crypto.getRandomValues(new Uint8Array(length))
-    let serialized = ab2str(value.buffer)
+    let serialized = new TextDecoder().decode(value)
     this.store[key] = serialized
 
     return crypto.subtle.digest({
       name: 'SHA-256'
     }, value).then(hash => {
-      let buffer = ab2buf(hash)
-      return base64url(buffer.toString('hex'))
+      return base64url(this.hex(hash.buffer))
     })
   }
+
+  /**
+   * buffer param is actually ArrayBuffer
+   */
+  hex (buffer) {
+    let hexCodes = []
+    let view = new DataView(buffer)
+
+    for (let i = 0; i < view.byteLength; i += 4) {
+      let value = view.getUint32(i)
+      let stringValue = value.toString(16)
+      let padding = '00000000'
+      let paddedValue = (padding + stringValue).slice(-padding.length)
+      hexCodes.push(paddedValue)
+    }
+
+    return hexCodes.join('')
+  }
+
 
 }
 
