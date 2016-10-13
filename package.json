@@ -19,6 +19,7 @@
   "dependencies": {
     "base64url": "^2.0.0",
     "node-fetch": "^1.6.3",
+    "text-encoding": "^0.6.1",
     "urlutils": "0.0.3"
   }
 }
