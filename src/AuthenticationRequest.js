@@ -14,7 +14,9 @@ const URL = require('urlutils')
 class AuthenticationRequest {
 
   /**
-   * Constructor
+   * constructor
+   *
+   * @param {RelyingParty} rp
    */
   constructor (rp) {
     // TODO could we make use of Proxy instead of shallow copying?
@@ -58,6 +60,9 @@ class AuthenticationRequest {
 
   /**
    * submit
+   *
+   * @param {Object} options
+   * @return {Promise}
    */
   submit (options) {
     let authenticate = this.authenticate
@@ -80,48 +85,70 @@ class AuthenticationRequest {
 
   /**
    * uri
+   *
+   * @param {Object} options
+   * @return {Promise}
    */
-  uri (options) {
-    let store = this.store
-    let provider = this.provider
-    let configuration = provider.configuration
+  uri (options = {}) {
+    try {
+      let {provider, registration, store} = this
+      let configuration = provider.configuration
 
-    assert(
-      configuration,
-      'OpenID Configuration required. Invoke the discover method.'
-    )
+      assert(configuration,
+        'OpenID Configuration required. Invoke the discover method.')
 
-    let endpoint = configuration.authorization_endpoint
+      let endpoint = configuration.authorization_endpoint
 
-    assert(
-      endpoint,
-      'OpenID Configuration does not specify the authorize endpoint.'
-    )
+      assert(endpoint,
+        'OpenID Configuration does not specify the authorization endpoint.')
 
-    let registration = this.registration
-    assert(registration, 'Registration must be provided for the RelyingParty.')
+      assert(registration,
+        'Registration must be provided for the RelyingParty.')
 
-    let client_id = registration.client_id
-    let defaults = this.defaults.authenticate
-    let params = Object.assign({client_id}, defaults, options)
+      let client_id = registration.client_id
+      let defaults = this.defaults.authenticate
+      let redirect_uri = options.redirect_uri || defaults.redirect_uri
 
-    return this.nonce().then(nonce => {
-      params.nonce = nonce
-      store['${client_id}:nonce'] = params.nonce
+      assert(redirect_uri,
+        'Redirect URI must be provided for the authentication request.')
 
-      let url = new URL(endpoint)
-      url.search = FormUrlencoded.encode(params)
+      let params = Object.assign({client_id}, defaults, options)
 
-      return url.href
-    })
+      return this.nonce().then(nonce => {
+        params.nonce = nonce
+        store['${client_id}:nonce'] = params.nonce
+
+        let url = new URL(endpoint)
+        url.search = FormUrlencoded.encode(params)
+
+        return url.href
+      })
+    } catch (error) {
+      return Promise.reject(error)
+    }
   }
 
   /**
    * nonce
+   *
+   * @param {Number} length
+   * @return {Promise}
    */
   nonce (length = 16) {
-    assert(this.registration, 'Missing client registration.')
-    assert(this.registration.client_id, 'Client registration is missing client_id.')
+
+    try {
+      assert(this.registration,
+        'Missing client registration.')
+
+      assert(this.registration.client_id,
+        'Client registration is missing client_id.')
+
+      assert(typeof this.store === 'object',
+        'A session store must be configured.')
+
+    } catch (error) {
+      return Promise.reject(error)
+    }
 
     let namespace = this.registration.client_id
     let key = `${namespace}:nonce`
@@ -132,29 +159,9 @@ class AuthenticationRequest {
     return crypto.subtle.digest({
       name: 'SHA-256'
     }, value).then(hash => {
-      return base64url(this.hex(hash.buffer))
+      return base64url(Buffer.from(hash))
     })
   }
-
-  /**
-   * buffer param is actually ArrayBuffer
-   */
-  hex (buffer) {
-    let hexCodes = []
-    let view = new DataView(buffer)
-
-    for (let i = 0; i < view.byteLength; i += 4) {
-      let value = view.getUint32(i)
-      let stringValue = value.toString(16)
-      let padding = '00000000'
-      let paddedValue = (padding + stringValue).slice(-padding.length)
-      hexCodes.push(paddedValue)
-    }
-
-    return hexCodes.join('')
-  }
-
-
 }
 
 /**
