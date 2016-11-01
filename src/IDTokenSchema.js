@@ -17,7 +17,7 @@ const IDTokenSchema = JWTSchema.extend({
      * advance using Discovery and Registration parameters, per Section 10.
      */
     header: {
-      not: { required: ['x5u', 'x5c', 'jku', 'jwk'] }
+      //not: { required: ['x5u', 'x5c', 'jku', 'jwk'] }
     },
 
     /**
