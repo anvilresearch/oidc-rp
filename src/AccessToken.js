@@ -1,28 +1,19 @@
 /**
  * Local dependencies
  */
-const {JWS} = require('?')
-
-/**
- * AccessToken Schema
- */
-const schema = JWS.schema.extend({
-  type: 'object',
-  properties: {
-    // ...
-  }
-})
+const {JWT} = require('jose')
+const AccessTokenSchema = require('./AccessTokenSchema')
 
 /**
  * AccessToken
  */
-class AccessToken extends JWS {
+class AccessToken extends JWT {
 
   /**
    * Schema
    */
   static get schema () {
-    return schema
+    return AccessTokenSchema
   }
 }
 
