@@ -215,11 +215,19 @@ class RelyingParty extends JSONDocument {
   }
 
   /**
+   * createRequest
+   */
+  createRequest (options, session) {
+    return AuthenticationRequest.create(this, options, session || this.store)
+  }
+
+  /**
    * Validate Response
    */
-  validateResponse (uri) {
-    let response = new AuthenticationResponse(this)
-    return response.validateResponse(uri)
+  validateResponse (response, session) {
+    session = session || this.store
+    return AuthenticationResponse
+      .validateResponse({rp: this, redirect: response, session})
   }
 
   /**
