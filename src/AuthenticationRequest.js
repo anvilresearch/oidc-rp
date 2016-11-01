@@ -4,8 +4,7 @@
 const assert = require('assert')
 const base64url = require('base64url')
 const crypto = require('webcrypto')
-const {TextDecoder} = require('text-encoding')
-const FormUrlencoded = require('./FormUrlencoded')
+const FormUrlEncoded = require('./FormUrlencoded')
 const URL = require('urlutils')
 
 /**
@@ -14,154 +13,104 @@ const URL = require('urlutils')
 class AuthenticationRequest {
 
   /**
-   * constructor
-   *
-   * @param {RelyingParty} rp
-   */
-  constructor (rp) {
-    // TODO could we make use of Proxy instead of shallow copying?
-    Object.assign(this, rp)
-    assert(this.provider, 'Provider must be configured for RelyingParty')
-    assert(this.provider.url, 'Provider URL must be configured for RelyingParty')
-    assert(this.store, 'A session store must be configured for RelyingParty')
-  }
-
-  /**
-   * popup
+   * create
    *
    * @description
-   * Configure the authorize popup window
-   * Adapted from dropbox-js for ngDropbox
+   * Create a new authentication request with generated state and nonce,
+   * validate presence of required parameters, serialize the request data and
+   * persist it to the session, and return a promise for an authentication
+   * request URI.
    *
-   * @param {Number} popupWidth
-   * @param {Number} popupHeight
+   * @param {RelyingParty} rp – instance of RelyingParty
+   * @param {Object} options - optional request parameters
+   * @param {Object} session – reference to localStorage or other session object
    *
-   * @returns {string}
+   * @returns {Promise}
    */
-  static popup (popupWidth, popupHeight) {
-    let x0, y0, width, height, popupLeft, popupTop
+  static create (rp, options, session) {
+    return new Promise((resolve, reject) => {
+      let {provider, defaults, registration} = rp
 
-    // Metrics for the current browser window.
-    x0 = window.screenX || window.screenLeft
-    y0 = window.screenY || window.screenTop
-    width = window.outerWidth || document.documentElement.clientWidth
-    height = window.outerHeight || document.documentElement.clientHeight
+        // validate presence of OP configuration, RP client registration,
+        // and default parameters
+        assert(provider.configuration,
+          'RelyingParty provider OpenID Configuration is missing')
 
-    // Computed popup window metrics.
-    popupLeft = Math.round(x0) + (width - popupWidth) / 2
-    popupTop = Math.round(y0) + (height - popupHeight) / 2.5
-    if (popupLeft < x0) { popupLeft = x0 }
-    if (popupTop < y0) { popupTop = y0 }
+        assert(defaults.authenticate,
+          'RelyingParty default authentication parameters are missing')
 
-    return 'width=' + popupWidth + ',height=' + popupHeight + ',' +
-    'left=' + popupLeft + ',top=' + popupTop + ',' +
-    'dialog=yes,dependent=yes,scrollbars=yes,location=yes'
-  }
+        assert(registration,
+          'RelyingParty client registration is missing')
 
-  /**
-   * submit
-   *
-   * @param {Object} options
-   * @return {Promise}
-   */
-  submit (options) {
-    let authenticate = this.authenticate
+        // define basic elements of the request
+        let issuer = provider.configuration.issuer
+        let endpoint = provider.configuration.authorization_endpoint
+        let client = { client_id: registration.client_id}
+        let params = Object.assign(defaults.authenticate, client, options)
 
-    assert(authenticate, 'RelyingParty must default authentication parameters.')
+        // validate presence of required configuration and parameters
+        assert(issuer,
+            'Missing issuer in provider OpenID Configuration')
 
-    this.uri(options).then(uri => {
-      // detect runtime environment (browser vs Node.js)
-      // and behave accordingly.
-      // should this throw if called in Node.js?
-      if (authenticate.display === 'popup') {
-        let {width, height} = this.popup
-        // window name should be some kind of client identifier
-        window.open(uri, 'rp', AuthenticationRequest.popup(width, height))
-      } else {
-        window.location = uri
-      }
+        assert(endpoint,
+            'Missing authorization_endpoint in provider OpenID Configuration')
+
+        assert(params.scope,
+            'Missing scope parameter in authentication request')
+
+        assert(params.response_type,
+            'Missing response_type parameter in authentication request')
+
+        assert(params.client_id,
+            'Missing client_id parameter in authentication request')
+
+        assert(params.redirect_uri,
+            'Missing redirect_uri parameter in authentication request')
+
+        // generate state and nonce random octets
+        params.state = Array.from(crypto.getRandomValues(new Uint8Array(16)))
+        params.nonce = Array.from(crypto.getRandomValues(new Uint8Array(16)))
+
+
+        // hash the state and nonce parameter values
+        return Promise.all([
+          crypto.subtle.digest({ name: 'SHA-256' }, params.state),
+          crypto.subtle.digest({ name: 'SHA-256' }, params.nonce)
+        ])
+
+        // serialize the request with original values, store in session by
+        // encoded state param, and replace state/nonce octets with encoded
+        // digests
+        .then(digests => {
+          let state = base64url(Buffer.from(digests[0]))
+          let nonce = base64url(Buffer.from(digests[1]))
+          let key = `${issuer}/requestHistory/${state}`
+
+          // store the request params for response validation
+          // with serialized octet values for state and nonce
+          session[key] = JSON.stringify(params)
+
+          // replace state and nonce octets with base64url encoded digests
+          params.state = state
+          params.nonce = nonce
+        })
+
+        // optionally encode a JWT with the request parameters
+        .then(() => {
+          // TODO
+          // optionally encode the request parameters as a JWT
+          // and replace params with `{ request: <jwt> }`
+        })
+
+        // render the request URI and terminate the algorithm
+        .then(() => {
+          let url = new URL(endpoint)
+          url.search = FormUrlEncoded.encode(params)
+          resolve(url.href)
+        })
     })
   }
 
-  /**
-   * uri
-   *
-   * @param {Object} options
-   * @return {Promise}
-   */
-  uri (options = {}) {
-    try {
-      let {provider, registration, store} = this
-      let configuration = provider.configuration
-
-      assert(configuration,
-        'OpenID Configuration required. Invoke the discover method.')
-
-      let endpoint = configuration.authorization_endpoint
-
-      assert(endpoint,
-        'OpenID Configuration does not specify the authorization endpoint.')
-
-      assert(registration,
-        'Registration must be provided for the RelyingParty.')
-
-      let client_id = registration.client_id
-      let defaults = this.defaults.authenticate
-      let redirect_uri = options.redirect_uri || defaults.redirect_uri
-
-      assert(redirect_uri,
-        'Redirect URI must be provided for the authentication request.')
-
-      let params = Object.assign({client_id}, defaults, options)
-
-      return this.nonce().then(nonce => {
-        params.nonce = nonce
-        store['${client_id}:nonce'] = params.nonce
-
-        let url = new URL(endpoint)
-        url.search = FormUrlencoded.encode(params)
-
-        return url.href
-      })
-    } catch (error) {
-      return Promise.reject(error)
-    }
-  }
-
-  /**
-   * nonce
-   *
-   * @param {Number} length
-   * @return {Promise}
-   */
-  nonce (length = 16) {
-
-    try {
-      assert(this.registration,
-        'Missing client registration.')
-
-      assert(this.registration.client_id,
-        'Client registration is missing client_id.')
-
-      assert(typeof this.store === 'object',
-        'A session store must be configured.')
-
-    } catch (error) {
-      return Promise.reject(error)
-    }
-
-    let namespace = this.registration.client_id
-    let key = `${namespace}:nonce`
-    let value = crypto.getRandomValues(new Uint8Array(length))
-    let serialized = new TextDecoder().decode(value)
-    this.store[key] = serialized
-
-    return crypto.subtle.digest({
-      name: 'SHA-256'
-    }, value).then(hash => {
-      return base64url(Buffer.from(hash))
-    })
-  }
 }
 
 /**

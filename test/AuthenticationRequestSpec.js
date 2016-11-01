@@ -21,236 +21,179 @@ const AuthenticationRequest = require('../src/AuthenticationRequest')
 /**
  * Tests
  */
-describe.only('AuthenticationRequest', () => {
+describe('AuthenticationRequest', () => {
+  let rp, options, session
 
-  /**
-   * constructor
-   */
-  describe('constructor', () => {
-    it('should assign argument properties', () => {
-      let provider = { url : 'https://forge.anvil.io' }
-      let store = {}
-      let request = new AuthenticationRequest({ provider, store })
-      request.provider.should.equal(provider)
-      request.store.should.equal(store)
-    })
-
-    it('should assert the provider property is present', () => {
-      expect(() => {
-        new AuthenticationRequest({})
-      }).to.throw('Provider must be configured for RelyingParty')
-    })
-
-    it('should assert the provider url is defined', () => {
-      expect(() => {
-        new AuthenticationRequest({ provider: {} })
-      }).to.throw('Provider URL must be configured for RelyingParty')
-    })
-
-    it('should assert the session store is defined', () => {
-      expect(() => {
-        new AuthenticationRequest({ provider: { url: 'https://forge.anvil.io' } })
-      }).to.throw('A session store must be configured for RelyingParty')
-    })
-  })
-
-  /**
-   * popup
-   */
-  describe('popup', () => {
-    // this only matters in the browser
-    if (typeof window !== 'undefined') {
-      it('should set "width"', () => {
-        AuthenticationRequest.popup(500, 300).should.include('width=red')
-      })
-
-      it('should set "height"')
-      it('should set "left"')
-      it('should set "top"')
-      it('should set "dialog"')
-      it('should set "dependent"')
-      it('should set "scrollbars"')
-      it('should set "location"')
+  beforeEach(() => {
+    rp = {
+      provider: {
+        configuration: {
+          issuer: 'https://forge.anvil.io',
+          authorization_endpoint: 'https://forge.anvil.io/authorize'
+        }
+      },
+      defaults: {
+        authenticate: {
+          scope: 'openid',
+          response_type: 'id_token token',
+          redirect_uri: 'https://example.com/callback'
+        }
+      },
+      registration: {
+        client_id: 'uuid'
+      }
     }
+
+    options = {}
+    session = {}
   })
 
-  /**
-   * submit
-   */
-  describe('submit', () => {
-    if (typeof window !== 'undefined') {
-      describe('popup', () => {
-        it('should open the authentication request URI in a new window')
-      })
-
-      describe('page', () => {
-        it('should set window location')
-      })
-    }
-  })
-
-  /**
-   * uri
-   */
-  describe('uri', () => {
-    let request
-
-    beforeEach(() => {
-      request = new AuthenticationRequest({
-        provider: {
-          url: 'https://forge.anvil.io',
-          configuration: {
-            authorization_endpoint: 'https://forge.anvil.io/authorize'
-          }
-        },
-        defaults: {
-          authenticate: {
-            response_type: 'id_token token',
-            redirect_uri: 'https://app.anvil.io/callback',
-            scope: 'openid profile'
-          }
-        },
-        registration: {
-          client_id: 'uuid'
-        },
-        store: {}
-      })
-    })
-
-    it('return a promise', () => {
-      return request.uri().should.eventually.be.fulfilled
+  describe('create', () => {
+    it('should return a promise', () => {
+      AuthenticationRequest.create(rp, options, session)
+        .should.be.instanceof(Promise)
     })
 
     it('should reject with missing OpenID Configuration', () => {
-      delete request.provider.configuration
-      return request.uri()
-        .should.be.rejectedWith('OpenID Configuration required')
+      delete rp.provider.configuration
+      return AuthenticationRequest.create(rp, options, session)
+        .should.be
+        .rejectedWith('RelyingParty provider OpenID Configuration is missing')
     })
 
-    it('should reject with missing authorize endpoint', () => {
-      delete request.provider.configuration.authorization_endpoint
-      return request.uri()
-        .should.be.rejectedWith(
-          'OpenID Configuration does not specify the authorization endpoint'
-        )
-    })
-
-    it('should reject with missing client registration', () => {
-      delete request.registration
-      return request.uri()
-        .should.be.rejectedWith(
-          'Registration must be provided for the RelyingParty.'
-        )
-    })
-
-    it('should reject with missing redirect uri', () => {
-      delete request.defaults.authenticate.redirect_uri
-      return request.uri()
-        .should.be.rejectedWith(
-          'Redirect URI must be provided for the authentication request.'
-        )
-    })
-
-    it('should set client_id param', () => {
-      return request.uri().then(uri => {
-        uri.should.include('client_id=uuid')
-      })
-    })
-
-    it('should set redirect_uri param', () => {
-      return request.uri().then(uri => {
-        uri.should.include('redirect_uri=https%3A%2F%2Fapp.anvil.io%2Fcallback')
-      })
-    })
-
-    it('should set response_type param', () => {
-      return request.uri().then(uri => {
-        uri.should.include('response_type=id_token%20token')
-      })
-    })
-
-    it('should set scope param', () => {
-      return request.uri().then(uri => {
-        uri.should.include('scope=openid%20profile')
-      })
-    })
-
-    it('should set display param', () => {
-      return request.uri({ display: 'popup' }).then(uri => {
-        uri.should.include('display=popup')
-      })
-    })
-
-    it('should set nonce param', () => {
-      return request.uri().then(uri => {
-        uri.should.include('nonce=')
-      })
-    })
-
-    it('should set param from options', () => {
-      return request.uri({ scope: 'openid email' }).then(uri => {
-        uri.should.include('scope=openid%20email')
-      })
-    })
-
-    it('should set additional param', () => {
-      return request.uri({ just: 'because' }).then(uri => {
-        uri.should.include('just=because')
-      })
-    })
-  })
-
-  /**
-   * nonce
-   */
-  describe('nonce', () => {
-    let request
-
-    beforeEach(() => {
-      request = new AuthenticationRequest({
-        provider: {
-          url: 'https://forge.anvil.io',
-          configuration: {
-            authorization_endpoint: 'https://forge.anvil.io/authorize'
-          }
-        },
-        defaults: {
-          authenticate: {
-            response_type: 'id_token token'
-
-          }
-        },
-        registration: {
-          client_id: 'uuid'
-        },
-        store: {}
-      })
+    it('should reject with missing default parameters', () => {
+      delete rp.defaults.authenticate
+      return AuthenticationRequest.create(rp, options, session)
+        .should.be
+        .rejectedWith('RelyingParty default authentication parameters are missing')
     })
 
     it('should reject with missing client registration', () => {
-      delete request.registration
-      return request.nonce()
-        .should.be.rejectedWith('Missing client registration')
+      delete rp.registration
+      return AuthenticationRequest.create(rp, options, session)
+        .should.be
+        .rejectedWith('RelyingParty client registration is missing')
     })
 
-    it('should reject with missing client id', () => {
-      delete request.registration.client_id
-      return request.nonce()
-        .should.be.rejectedWith('Client registration is missing client_id.')
+    it('should reject with missing issuer', () => {
+      delete rp.provider.configuration.issuer
+      return AuthenticationRequest.create(rp, options, session)
+        .should.be
+        .rejectedWith('Missing issuer in provider OpenID Configuration')
     })
 
-    it('should store random nonce value in session', () => {
-      return request.nonce().then(() => {
-        request.store.should.have.property('uuid:nonce')
+    it('should reject with missing authorization endpoint', () => {
+      delete rp.provider.configuration.authorization_endpoint
+      return AuthenticationRequest.create(rp, options, session)
+        .should.be
+        .rejectedWith('Missing authorization_endpoint in provider OpenID Configuration')
+    })
+    it('should reject with missing `scope` parameter', () => {
+      delete rp.defaults.authenticate.scope
+      return AuthenticationRequest.create(rp, options, session)
+        .should.be
+        .rejectedWith('Missing scope parameter in authentication request')
+    })
+
+    it('should reject with missing `response_type` parameter', () => {
+      delete rp.defaults.authenticate.response_type
+      return AuthenticationRequest.create(rp, options, session)
+        .should.be
+        .rejectedWith('Missing response_type parameter in authentication request')
+    })
+
+    it('should reject with missing `client_id` parameter', () => {
+      delete rp.registration.client_id
+      return AuthenticationRequest.create(rp, options, session)
+        .should.be
+        .rejectedWith('Missing client_id parameter in authentication request')
+    })
+
+    it('should reject with missing `redirect_uri` parameter', () => {
+      delete rp.defaults.authenticate.redirect_uri
+      return AuthenticationRequest.create(rp, options, session)
+        .should.be
+        .rejectedWith('Missing redirect_uri parameter in authentication request')
+    })
+
+    it('should persist the request to session by `state` param', () => {
+      return AuthenticationRequest.create(rp, options, session).then(() => {
+        for (let key in session) {
+          key.should.include('https://forge.anvil.io/requestHistory/')
+          key.split('/').pop().length.should.equal(43)
+        }
       })
     })
 
-    it('should resolve SHA-256 digest of random value', () => {
-      return request.nonce().then(nonce => {
-        (typeof nonce).should.equal('string')
-        nonce.length.should.equal(43)
+    it('should persist the random octets for `state` to session', () => {
+      return AuthenticationRequest.create(rp, options, session).then(() => {
+        for (let key in session) {
+          let octets = JSON.parse(session[key]).state
+          octets.forEach(octet => {
+            expect(Number.isInteger(octet)).to.equal(true)
+          })
+        }
       })
     })
+
+    it('should persist the random octets for `nonce` to session', () => {
+      return AuthenticationRequest.create(rp, options, session).then(() => {
+        for (let key in session) {
+          let octets = JSON.parse(session[key]).nonce
+          octets.forEach(octet => {
+            expect(Number.isInteger(octet)).to.equal(true)
+          })
+        }
+      })
+    })
+
+    it('should resolve an authentication request URI', () => {
+      return AuthenticationRequest.create(rp, options, session).then(url => {
+        url.should.include('https://forge.anvil.io/authorize?')
+      })
+    })
+
+    it('should set default paramters', () => {
+      return AuthenticationRequest.create(rp, options, session).then(url => {
+        url.should.include('scope=openid')
+        url.should.include('response_type=id_token%20token')
+        url.should.include('redirect_uri=https%3A%2F%2Fexample.com%2Fcallback')
+      })
+    })
+
+    it('should override default paramters', () => {
+      options = { scope: 'openid profile email' }
+      return AuthenticationRequest.create(rp, options, session).then(url => {
+        url.should.include('scope=openid%20profile%20email')
+      })
+    })
+
+    it('should set `client_id` parameter', () => {
+      return AuthenticationRequest.create(rp, options, session).then(url => {
+        url.should.include('client_id=uuid')
+      })
+    })
+
+    it('should set `state` parameter', () => {
+      return AuthenticationRequest.create(rp, options, session).then(url => {
+        url.split('state=').pop().split('&').shift().length.should.equal(43)
+      })
+    })
+
+    it('should set `nonce` parameter', () => {
+      return AuthenticationRequest.create(rp, options, session).then(url => {
+        url.split('nonce=').pop().split('&').shift().length.should.equal(43)
+      })
+    })
+
+    it('should set optional parameters', () => {
+      options = { display: 'page' }
+      return AuthenticationRequest.create(rp, options, session).then(url => {
+        url.should.include('display=page')
+      })
+    })
+
+    it('should optionally encode parameters as JWT')
   })
 })
 
