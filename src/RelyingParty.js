@@ -247,11 +247,6 @@ class RelyingParty extends JSONDocument {
   }
 
   /**
-   * Is Authenticated
-   */
-  isAuthenticated () {}
-
-  /**
    * Logout
    */
   logout () {}

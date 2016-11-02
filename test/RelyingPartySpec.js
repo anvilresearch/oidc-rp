@@ -42,22 +42,12 @@ describe('RelyingParty', () => {
     it('should register a client')
   })
 
-  describe('authenticate', () => {
-    it('should return a promise')
-  })
-
-  describe('authenticateUri', () => {
-    it('should return a promise')
-  })
-
   describe('discover', () => {
     it('return a promise')
     it('should reject with missing provider url (issuer)')
     it('should resolve provider OpenID Configuration')
     it('should set provider OpenID Configuration')
   })
-
-  describe('isAuthenticated', () => {})
 
   describe('jwks', () => {
     it('return a promise')
