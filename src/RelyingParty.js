@@ -208,8 +208,15 @@ class RelyingParty extends JSONDocument {
    */
   validateResponse (response, session) {
     session = session || this.store
+
+    if (response.match(/^http(s?):\/\//)) {
+      response = { rp: this, redirect: response, session }
+    } else {
+      response = { rp: this, body: response, session }
+    }
+
     return AuthenticationResponse
-      .validateResponse({rp: this, redirect: response, session})
+      .validateResponse(response)
   }
 
   /**
