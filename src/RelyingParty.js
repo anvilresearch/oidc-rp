@@ -197,37 +197,6 @@ class RelyingParty extends JSONDocument {
   }
 
   /**
-   * Authenticate
-   *
-   * @description
-   * Initiates OpenID Connect implicit authentication flow by, directing the
-   * User-Agent to the issuer's authorize endpoint, either by changing the
-   * window location or by opening a popup window.
-   *
-   * @param {Object} options
-   * @returns Promise
-   */
-  authenticate (options) {
-    let request = new AuthenticationRequest(this)
-    return request.submit(options)
-  }
-
-  /**
-   * Authenticate URI
-   *
-   * @description
-   * Constructs a URI that can be employed in a hyperlink to initiate an
-   * authentication flow with the configured OpenID Connect provider (issuer)..
-   *
-   * @param {Object} options
-   * @returns string
-   */
-  authenticateUri (options) {
-    let request = new AuthenticationRequest(this)
-    return request.uri(options)
-  }
-
-  /**
    * createRequest
    */
   createRequest (options, session) {
