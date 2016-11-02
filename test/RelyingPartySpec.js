@@ -28,6 +28,12 @@ describe('RelyingParty', () => {
     it('should by the RelyingPartySchema')
   })
 
+  describe('from', () => {
+    it('should reject with invalid argument')
+    it('should request JWK Set if missing from argument')
+    it('should import JWK Set if defined in argument')
+  })
+
   describe('static register', () => {
     it('should return a promise')
     it('should resolve a RelyingParty instance')

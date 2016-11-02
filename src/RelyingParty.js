@@ -58,29 +58,42 @@ const RelyingPartySchema = require('./RelyingPartySchema')
 class RelyingParty extends JSONDocument {
 
   /**
-   * fromProvider
-   *
-   * @description
-   * Promises a RelyingParty instance with discovery and JWK Set
-   * data.
-   *
-   * @param {Object} options
-   * @returns Promise
-   */
-  static fromProvider (options) {
-    let client = new RelyingParty(options)
-
-    return Promise.all([
-      client.discover(),
-      client.keys()
-    ]).then(() => client)
-  }
-
-  /**
    * Schema
    */
   static get schema () {
     return RelyingPartySchema
+  }
+
+  /**
+   * from
+   *
+   * @description
+   * Create a RelyingParty instance from a previously registered client.
+   *
+   * @param {Object} data
+   * @returns Promise
+   */
+  static from (data) {
+    let rp = new RelyingParty(data)
+    let validation = rp.validate()
+
+    // schema validation
+    if (!validation.valid) {
+      return Promise.reject(validation)
+    }
+
+    let jwks = rp.provider.jwks
+
+    // request the JWK Set if missing
+    if (!jwks) {
+      return rp.jwks().then(() => rp)
+    }
+
+    // otherwise import the JWK Set to webcrypto
+    return JWKSet.importKeys(jwks).then(jwks => {
+      rp.provider.jwks = jwks
+      return rp
+    })
   }
 
   /**
