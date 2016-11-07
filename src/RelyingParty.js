@@ -124,7 +124,7 @@ class RelyingParty extends JSONDocument {
       let issuer = this.provider.url
       let endpoint = '.well-known/openid-configuration'
 
-      assert(issuer, 'OpenID Provider configuration must include issuer')
+      assert(issuer, 'RelyingParty provider must define "url"')
 
       return fetch(`${issuer}/${endpoint}`)
         //.then(status(200))
