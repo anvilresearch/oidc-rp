@@ -31,7 +31,7 @@ class AuthenticationResponse {
       .then(this.errorResponse)
       .then(this.validateResponseMode)
       .then(this.validateResponseParams)
-      .then(this.exchangeAuthorizationcode)
+      .then(this.exchangeAuthorizationCode)
       .then(this.validateIDToken)
       .then(() => {
         // what kind of response object?
