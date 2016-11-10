@@ -5,6 +5,8 @@ const URL = require('urlutils')
 const assert = require('assert')
 const crypto = require('webcrypto')
 const base64url = require('base64url')
+const fetch = require('node-fetch')
+const Headers = fetch.Headers
 const FormUrlEncoded = require('./FormUrlencoded')
 const IDToken = require('./IDToken')
 //const AccessToken = require('./AccessToken')
@@ -230,8 +232,8 @@ class AuthenticationResponse {
 
     // initialize the token request parameters
     let body = FormUrlEncoded.encode({
-      'grant_type': 'code',
-      'authorization_code': code,
+      'grant_type': 'authorization_code',
+      'code': code,
       'redirect_uri': request['redirect_uri']
     })
 
