@@ -206,7 +206,7 @@ class AuthenticationResponse {
     let code = params.code
 
     // only exchange the authorization code when the response type is "code"
-    if (!code || request['response_type'] === 'code') {
+    if (!code || request['response_type'] !== 'code') {
       return Promise.resolve(response)
     }
 
