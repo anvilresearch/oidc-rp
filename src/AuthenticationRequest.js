@@ -74,8 +74,8 @@ class AuthenticationRequest {
 
         // hash the state and nonce parameter values
         return Promise.all([
-          crypto.subtle.digest({ name: 'SHA-256' }, params.state),
-          crypto.subtle.digest({ name: 'SHA-256' }, params.nonce)
+          crypto.subtle.digest({ name: 'SHA-256' }, new Uint8Array(params.state)),
+          crypto.subtle.digest({ name: 'SHA-256' }, new Uint8Array(params.nonce))
         ])
 
         // serialize the request with original values, store in session by

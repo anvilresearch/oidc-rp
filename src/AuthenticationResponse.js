@@ -120,7 +120,7 @@ class AuthenticationResponse {
    * @returns {Promise}
    */
   static validateStateParam (response) {
-    let octets = response.request.state
+    let octets = new Uint8Array(response.request.state)
     let encoded = response.params.state
 
     return crypto.subtle.digest({ name: 'SHA-256' }, octets).then(digest => {
@@ -468,7 +468,7 @@ class AuthenticationResponse {
    * @returns {Promise}
    */
   static verifyNonce (response) {
-    let octets = response.request.nonce
+    let octets = new Uint8Array(response.request.nonce)
     let nonce = response.decoded.payload.nonce
 
     if (!nonce) {
