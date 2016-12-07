@@ -261,7 +261,6 @@ class AuthenticationResponse {
     return fetch(endpoint, {method, headers, body})
       .then(tokenResponse => tokenResponse.json())
       .then(tokenResponse => {
-
         assert(tokenResponse['access_token'],
           'Missing access_token in token response')
 
