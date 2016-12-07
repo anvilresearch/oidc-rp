@@ -167,6 +167,10 @@ class RelyingParty extends JSONDocument {
     }
   }
 
+  serialize () {
+    return JSON.stringify(this)
+  }
+
   /**
    * jwks
    *
@@ -205,6 +209,11 @@ class RelyingParty extends JSONDocument {
 
   /**
    * Validate Response
+   *
+   * @param response {string} req.query or req.body.text
+   * @param session {Object} req.session or similar session store
+   * @returns {Promise<Object>} Custom response object, with `params` and
+   *   `mode` properties
    */
   validateResponse (response, session) {
     session = session || this.store
