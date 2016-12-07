@@ -7,7 +7,7 @@ module.exports = {
   output: {
     path: path.join(__dirname, '/dist/'),
     filename: 'oidc.rp.min.js',
-    library: 'OIDC_RP',
+    library: 'OIDC',
     libraryTarget: 'var'
   },
   externals: {
