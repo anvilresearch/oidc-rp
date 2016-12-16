@@ -26,7 +26,24 @@ release:
 - [anvilresearch/webcrypto](https://github.com/anvilresearch/webcrypto)
 - [anvilresearch/jose](https://github.com/anvilresearch/jose)
 
-The current contents of the respository should be considered a "sketch".
+The current contents of the repository should be considered a "sketch".
+
+## Usage in Node
+
+```js
+let RelyingParty = require('oidc-rp)
+```
+
+## Usage in the Browser
+
+To build a Webpack-generated bundle:
+
+```bash
+npm run dist
+```
+
+When loaded into an HTML page via `<script src="./dist/oidc.rp.min.js"></script>`,
+the library is exposed as a global var, `OIDC`.
 
 ## Running tests
 
