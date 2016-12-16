@@ -31,7 +31,7 @@ The current contents of the repository should be considered a "sketch".
 ## Usage in Node
 
 ```js
-let RelyingParty = require('oidc-rp)
+let RelyingParty = require('oidc-rp')
 ```
 
 ## Usage in the Browser
