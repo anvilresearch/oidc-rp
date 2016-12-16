@@ -3,7 +3,7 @@
  */
 const assert = require('assert')
 const fetch = require('node-fetch')
-const {Request, Headers} = fetch
+const Headers = fetch.Headers ? fetch.Headers : global.Headers
 const {JSONSchema, JSONDocument} = require('json-document')
 const {JWKSet} = require('jose')
 const AuthenticationRequest = require('./AuthenticationRequest')
@@ -71,7 +71,7 @@ class RelyingParty extends JSONDocument {
    * Create a RelyingParty instance from a previously registered client.
    *
    * @param {Object} data
-   * @returns Promise
+   * @returns {Promise<RelyingParty>}
    */
   static from (data) {
     let rp = new RelyingParty(data)
@@ -98,6 +98,13 @@ class RelyingParty extends JSONDocument {
 
   /**
    * register
+   *
+   * @param issuer {string} Provider URL
+   * @param registration {Object} Client dynamic registration options
+   * @param options {Object}
+   * @param options.defaults
+   * @param [options.store] {Session|Storage}
+   * @returns {Promise<RelyingParty>} RelyingParty instance, registered.
    */
   static register (issuer, registration, options) {
     let rp = new RelyingParty({
@@ -108,16 +115,28 @@ class RelyingParty extends JSONDocument {
 
     return Promise.resolve()
       .then(() => rp.discover())
+      .catch(err => {
+        console.error('Error in RP register() > discover() step:', err)
+        throw err
+      })
       .then(() => rp.jwks())
+      .catch(err => {
+        console.error('Error in RP register() > jwks() step:', err)
+        throw err
+      })
       .then(() => rp.register(registration))
+      .catch(err => {
+        console.error('Error in RP register() > register() step:', err)
+        throw err
+      })
       .then(() => rp)
   }
 
   /**
    * Discover
    *
-   * @description Promises the issuer's OpenID Configuration.
-   * @returns {Promise}
+   * @description Fetches the issuer's OpenID Configuration.
+   * @returns {Promise<Object>} Resolves with the provider configuration response
    */
   discover () {
     try {
@@ -141,7 +160,9 @@ class RelyingParty extends JSONDocument {
    * Register
    *
    * @description Register's a client with provider as a Relying Party
-   * @returns {Promise}
+   *
+   * @param options {Object}
+   * @returns {Promise<Object>} Resolves with the registration response object
    */
   register (options) {
     try {
@@ -202,6 +223,12 @@ class RelyingParty extends JSONDocument {
 
   /**
    * createRequest
+   *
+   * @param options {Object} Authn request options hashmap
+   * @param options.redirect_uri {string}
+   * @param options.response_type {string} e.g. 'code' or 'id_token token'
+   * @param session {Session|Storage} req.session or localStorage
+   * @returns {Promise<string>} Authn request URL
    */
   createRequest (options, session) {
     return AuthenticationRequest.create(this, options, session || this.store)
@@ -211,7 +238,7 @@ class RelyingParty extends JSONDocument {
    * Validate Response
    *
    * @param response {string} req.query or req.body.text
-   * @param session {Object} req.session or similar session store
+   * @param session {Session|Storage} req.session or localStorage or similar
    * @returns {Promise<Object>} Custom response object, with `params` and
    *   `mode` properties
    */
@@ -224,8 +251,7 @@ class RelyingParty extends JSONDocument {
       response = { rp: this, body: response, session }
     }
 
-    return AuthenticationResponse
-      .validateResponse(response)
+    return AuthenticationResponse.validateResponse(response)
   }
 
   /**
