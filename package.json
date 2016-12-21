@@ -28,6 +28,7 @@
   "homepage": "https://github.com/anvilresearch/oidc-rp#readme",
   "dependencies": {
     "base64url": "^2.0.0",
+    "jose": "git://github.com/anvilresearch/jose.git",
     "json-document": "0.0.1",
     "node-fetch": "^1.6.3",
     "text-encoding": "^0.6.1",
@@ -35,12 +36,13 @@
     "webcrypto": "git://github.com/anvilresearch/webcrypto.git"
   },
   "devDependencies": {
-    "babel-cli": "^6.16.0",
-    "babel-core": "^6.17.0",
-    "babel-loader": "^6.2.5",
-    "babel-preset-es2015": "^6.16.0",
+    "babel-cli": "^6.18.0",
+    "babel-core": "^6.21.0",
+    "babel-loader": "^6.2.10",
+    "babel-preset-es2015": "^6.18.0",
     "chai": "^3.5.0",
     "chai-as-promised": "^6.0.0",
+    "mocha": "^3.2.0",
     "webpack": "^1.13.1"
   }
 }
