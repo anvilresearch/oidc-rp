@@ -7,7 +7,7 @@ const crypto = require('webcrypto')
 const base64url = require('base64url')
 const fetch = require('node-fetch')
 const Headers = fetch.Headers ? fetch.Headers : global.Headers
-const FormUrlEncoded = require('./FormUrlencoded')
+const FormUrlEncoded = require('./FormUrlEncoded')
 const IDToken = require('./IDToken')
 //const AccessToken = require('./AccessToken')
 

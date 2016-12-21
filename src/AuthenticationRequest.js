@@ -4,7 +4,7 @@
 const assert = require('assert')
 const base64url = require('base64url')
 const crypto = require('webcrypto')
-const FormUrlEncoded = require('./FormUrlencoded')
+const FormUrlEncoded = require('./FormUrlEncoded')
 const URL = require('urlutils')
 
 /**
