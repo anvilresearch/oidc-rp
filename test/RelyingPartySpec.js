@@ -58,7 +58,34 @@ describe('RelyingParty', () => {
     it('should resolve JWK Set')
   })
 
-  describe('logout', () => {})
+  describe('logout', () => {
+    it('should reject with missing OpenID Configuration', done => {
+      let rp = new RelyingParty()
+      rp.logout()
+        .catch(err => {
+          expect(err.message).to.equal('OpenID Configuration is not initialized.')
+          done()
+        })
+    })
+
+    it('should reject with missing end_session_endpoint', done => {
+      let options = {
+        provider: {
+          configuration: {
+            issuer: 'https://forge.anvil.io'
+          }
+        }
+      }
+      let rp = new RelyingParty(options)
+      rp.logout()
+        .catch(err => {
+          expect(err.message).to.equal('OpenID Configuration is missing end_session_endpoint.')
+          done()
+        })
+    })
+
+    it('should make a request to the end_session_endpoint')
+  })
 
   describe('register', () => {
     it('return a promise')
