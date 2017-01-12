@@ -20,7 +20,7 @@ const IDTokenSchema = require('../src/IDTokenSchema')
 /**
  * Tests
  */
-describe('IDTokenSchema', () => {
+describe.skip('IDTokenSchema', () => {
   let header, payload
 
   before(() => {
