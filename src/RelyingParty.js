@@ -290,8 +290,38 @@ class RelyingParty extends JSONDocument {
 
   /**
    * Logout
+   *
+   * @returns {Promise}
    */
-  logout () {}
+  logout () {
+    try {
+      let configuration = this.provider.configuration
+      assert(configuration, 'OpenID Configuration is not initialized.')
+      assert(configuration.end_session_endpoint,
+        'OpenID Configuration is missing end_session_endpoint.')
+    } catch (error) {
+      return Promise.reject(error)
+    }
+
+    let uri = configuration.end_session_endpoint
+    let method = 'get'
+
+    return fetch(uri, {method})
+
+    // TODO: Validate `frontchannel_logout_uri` if necessary
+    /**
+     * frontchannel_logout_uri - OPTIONAL. RP URL that will cause the RP to log
+     * itself out when rendered in an iframe by the OP.
+     *
+     * An `iss` (issuer) query parameter and a `sid`
+     * (session ID) query parameter MAY be included by the OP to enable the RP
+     * to validate the request and to determine which of the potentially
+     * multiple sessions is to be logged out. If a sid (session ID) query
+     * parameter is included, an iss (issuer) query parameter MUST also be
+     * included.
+     * @see https://openid.net/specs/openid-connect-frontchannel-1_0.html#RPLogout
+     */
+  }
 }
 
 module.exports = RelyingParty
