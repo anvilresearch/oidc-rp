@@ -239,9 +239,8 @@ class RelyingParty extends JSONDocument {
 
     return fetch(uri)
     //.then(status(200))
-      .then(response => {
-        return JWKSet.importKeys(response.json())
-      })
+      .then(response => response.json())
+      .then(json => JWKSet.importKeys(json))
       .then(jwks => {
         this.provider.jwks = jwks
         return jwks
@@ -325,9 +324,7 @@ class RelyingParty extends JSONDocument {
 
     return fetch(uri, {headers})
       .then(status(200))
-      .then(response => {
-        return response.json()
-      })
+      .then(response => response.json())
       .catch(error => {
         console.error('Error while fetching rp.userinfo():', error)
         throw error
