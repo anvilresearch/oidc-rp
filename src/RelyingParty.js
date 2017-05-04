@@ -167,7 +167,7 @@ class RelyingParty extends JSONDocument {
   /**
    * Register
    *
-   * @description Register's a client with provider as a Relying Party
+   * @description Registers a client with provider as a Relying Party
    *
    * @param options {Object}
    * @returns {Promise<Object>} Resolves with the registration response object
@@ -219,7 +219,8 @@ class RelyingParty extends JSONDocument {
   /**
    * jwks
    *
-   * @description Promises the issuer's JWK Set.
+   * @description Resolves with the issuer's JWK Set.
+   *
    * @returns {Promise}
    */
   jwks () {
@@ -271,8 +272,11 @@ class RelyingParty extends JSONDocument {
   /**
    * Validate Response
    *
+   * @description
+   *
    * @param response {string} req.query or req.body.text
    * @param session {Session|Storage} req.session or localStorage or similar
+   *
    * @returns {Promise<Object>} Custom response object, with `params` and
    *   `mode` properties
    */
@@ -287,7 +291,7 @@ class RelyingParty extends JSONDocument {
 
     return AuthenticationResponse.validateResponse(response)
       .catch(error => {
-        console.error('Error in rp.validateResponse(), response:', response)
+        console.error('Error in rp.validateResponse():', error)
         throw error
       })
   }

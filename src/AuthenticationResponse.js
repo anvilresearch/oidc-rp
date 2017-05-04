@@ -20,10 +20,13 @@ class AuthenticationResponse {
    * validateResponse
    *
    * @description
-   * Authentication response validation.
+   * Parses and validates the authentication response. If this is an
+   * Authorization Code workflow, this method also performs the exchange of
+   * the auth code for access and ID tokens.
    *
-   * @param {string|Object} response
-   * @returns {Promise}
+   * @param response {string|Object} A redirect URI or a request body
+   *
+   * @returns {Promise<Object>}
    */
   static validateResponse (response) {
     return Promise.resolve(response)
