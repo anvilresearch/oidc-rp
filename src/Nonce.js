@@ -1,7 +1,7 @@
 /**
  * Dependencies
  */
-const crypto = require('webcrypto')
+const crypto = require('@trust/webcrypto')
 
 /**
  * Nonce

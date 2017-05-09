@@ -16,7 +16,7 @@ let expect = chai.expect
 /**
  * Code under test
  */
-const {JWT} = require('jose')
+const {JWT} = require('@trust/jose')
 const IDToken = require('../src/IDToken')
 const AuthenticationResponse = require('../src/AuthenticationResponse')
 const {RsaPrivateCryptoKey, RsaPublicCryptoKey} = require('./keys')
