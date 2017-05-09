@@ -14,7 +14,7 @@ let expect = chai.expect
 /**
  * Code under test
  */
-const {JSONSchema} = require('json-document')
+const {JSONSchema} = require('@trust/json-document')
 const IDTokenSchema = require('../src/IDTokenSchema')
 
 /**

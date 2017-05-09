@@ -3,7 +3,7 @@
  */
 const URL = require('urlutils')
 const assert = require('assert')
-const crypto = require('webcrypto')
+const crypto = require('@trust/webcrypto')
 const base64url = require('base64url')
 const fetch = require('node-fetch')
 const Headers = fetch.Headers ? fetch.Headers : global.Headers

@@ -4,8 +4,8 @@
 const assert = require('assert')
 const fetch = require('node-fetch')
 const Headers = fetch.Headers ? fetch.Headers : global.Headers
-const {JSONSchema, JSONDocument} = require('json-document')
-const {JWKSet} = require('jose')
+const {JSONSchema, JSONDocument} = require('@trust/json-document')
+const {JWKSet} = require('@trust/jose')
 const AuthenticationRequest = require('./AuthenticationRequest')
 const AuthenticationResponse = require('./AuthenticationResponse')
 const RelyingPartySchema = require('./RelyingPartySchema')
