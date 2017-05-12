@@ -70,11 +70,40 @@ describe('RelyingParty', () => {
   })
 
   describe('jwks', () => {
+    let providerUrl = 'https://provider.example.com'
+    let testJwks = require('./resources/jwks.json')
+    nock(providerUrl).get('/jwks').reply(200, testJwks)
+
     it('return a promise')
-    it('should reject with missing OpenID Configuration')
-    it('should reject with missing jwks uri')
+
+    it('should reject with missing OpenID Configuration', () => {
+      let rp = new RelyingParty({ provider: {} })
+
+      rp.jwks().should.be.rejectedWith(/OpenID Configuration is not initialized/)
+    })
+
+    it('should reject with missing jwks uri', () => {
+      let rp = new RelyingParty({ provider: { configuration: {} } })
+
+      rp.jwks().should.be.rejectedWith(/OpenID Configuration is missing jwks_uri/)
+    })
+
     it('should import JWKs')
-    it('should set provider JWK Set')
+
+    it('should set provider JWK Set', () => {
+      let provider = {
+        url: providerUrl,
+        configuration: { jwks_uri: providerUrl + '/jwks' }
+      }
+      let rp = new RelyingParty({ provider })
+
+      return rp.jwks()
+        .then(() => {
+          // console.log(rp.provider.jwks)
+          expect(rp.provider).to.have.property('jwks')
+        })
+    })
+
     it('should resolve JWK Set')
   })
 
@@ -85,7 +114,7 @@ describe('RelyingParty', () => {
       rp.logout().should.be.rejectedWith(/OpenID Configuration is not initialized/)
     })
 
-    it('should reject with missing end_session_endpoint', done => {
+    it('should reject with missing end_session_endpoint', () => {
       let options = {
         provider: {
           configuration: { issuer: 'https://forge.anvil.io' }
