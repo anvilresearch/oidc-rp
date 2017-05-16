@@ -296,6 +296,7 @@ class RelyingParty extends JSONDocument {
   logout () {
     let configuration
     try {
+      assert(this.provider, 'OpenID Configuration is not initialized.')
       configuration = this.provider.configuration
       assert(configuration, 'OpenID Configuration is not initialized.')
       assert(configuration.end_session_endpoint,
