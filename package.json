@@ -9,8 +9,9 @@
   ],
   "scripts": {
     "dist": "webpack --progress --colors --optimize-minimize",
-    "prepublish": "npm run dist",
-    "test": "mocha -w"
+    "prepublish": "npm run snyk-protect && npm run dist",
+    "test": "mocha -w",
+    "snyk-protect": "snyk protect"
   },
   "repository": {
     "type": "git",
@@ -40,7 +41,8 @@
     "node-fetch": "^1.6.3",
     "text-encoding": "^0.6.1",
     "urlutils": "0.0.3",
-    "@trust/webcrypto": "0.0.2"
+    "@trust/webcrypto": "0.0.2",
+    "snyk": "^1.30.1"
   },
   "devDependencies": {
     "babel-core": "^6.24.1",
@@ -50,5 +52,6 @@
     "chai-as-promised": "^6.0.0",
     "mocha": "^3.2.0",
     "webpack": "^2.5.1"
-  }
+  },
+  "snyk": true
 }
