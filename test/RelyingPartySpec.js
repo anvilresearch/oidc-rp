@@ -70,9 +70,13 @@ describe('RelyingParty', () => {
   })
 
   describe('jwks', () => {
-    let providerUrl = 'https://provider.example.com'
-    let testJwks = require('./resources/jwks.json')
-    nock(providerUrl).get('/jwks').reply(200, testJwks)
+    let providerUrl, testJwks
+
+    before(() => {
+      providerUrl = 'https://provider.example.com'
+      testJwks = require('./resources/jwks.json')
+      nock(providerUrl).get('/jwks').reply(200, testJwks)
+    })
 
     it('return a promise')
 
