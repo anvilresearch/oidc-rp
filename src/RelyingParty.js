@@ -3,6 +3,7 @@
  */
 const assert = require('assert')
 const fetch = require('node-fetch')
+const URL = require('urlutils')
 const Headers = fetch.Headers ? fetch.Headers : global.Headers
 const {JSONSchema, JSONDocument} = require('@trust/json-document')
 const {JWKSet} = require('@trust/jose')
@@ -141,11 +142,13 @@ class RelyingParty extends JSONDocument {
   discover () {
     try {
       let issuer = this.provider.url
-      let endpoint = '.well-known/openid-configuration'
 
       assert(issuer, 'RelyingParty provider must define "url"')
 
-      return fetch(`${issuer}/${endpoint}`)
+      let url = new URL(issuer)
+      url.pathname = '.well-known/openid-configuration'
+
+      return fetch(url.toString())
         //.then(status(200))
         .then(response => {
           return response.json().then(json => this.provider.configuration = json)
@@ -296,6 +299,7 @@ class RelyingParty extends JSONDocument {
   logout () {
     let configuration
     try {
+      assert(this.provider, 'OpenID Configuration is not initialized.')
       configuration = this.provider.configuration
       assert(configuration, 'OpenID Configuration is not initialized.')
       assert(configuration.end_session_endpoint,
