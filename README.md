@@ -1,40 +1,76 @@
-# OpenID Connect Relying Party
+# OpenID Connect Relying Party _(oidc-rp)_
 
-OpenID Connect Relying Party client library for Node.js and the browser.
+[![standard-readme compliant](https://img.shields.io/badge/readme%20style-standard-brightgreen.svg?style=flat-square)](https://github.com/RichardLitt/standard-readme)
 
-## Planned Features
+> OpenID Connect Relying Party for Node.js and the browser.
 
-- Dynamic Configuration and Client Registration
-- Authorization Code, Implicit, Hybrid, Refresh, and Client Credentials grants.
-- Simultaneous use of multiple OpenID Connect Providers
-- Full page, popup, and embedded UI
-- Automated key rotation based on JWK `kid` value
-- Session management, front- and back-channel logout
-- Request parameters as JWT
-- Claims request parameter
-- Claims language tags
-- ACDC and Proof of Possession
-- OAuth 2.0 Bearer Token requests
-- Compatible with Webpack
+- [x] Dynamic Configuration and Client Registration
+- [x] Authorization Code, Implicit, and Hybrid grants
+- [x] Relying Party initiated logout
+- [ ] Refresh grant
+- [ ] Client Credentials grant
+- [ ] Key rotation using JWK `kid` value
+- [ ] Session management
+- [ ] front- and back-channel logout
+- [ ] Request parameters as JWT
+- [ ] Claims request parameter
+- [ ] Claims language tags
+- [ ] ACDC and Proof of Possession
+- [ ] OAuth 2.0 Bearer Token requests
 
-## Dependencies
+## Table of Contents
 
-This package is a work in progress, dependent on other ongoing projects. Code
-contained herein will be completed when the following dependencies are ready to
-release:
+* [Security](#security)
+* [Background](#background)
+* [Install](#install)
+* [Usage](#usage)
+  * [Node.js](#nodejs)
+  * [Browser](#browser)
+* [Develop](#develop)
+* [API](#api)
+* [Maintainers](#maintainers)
+* [Contribute](#contribute)
+* [MIT License](#mit-license)
 
-- [anvilresearch/webcrypto](https://github.com/anvilresearch/webcrypto)
-- [anvilresearch/jose](https://github.com/anvilresearch/jose)
+## Security
 
-The current contents of the repository should be considered a "sketch".
+...
 
-## Usage in Node
+## Background
 
-```js
-let RelyingParty = require('oidc-rp')
+...
+
+## Install
+
+```bash
+$ npm install @trust/oidc-rp --save
 ```
 
-## Usage in the Browser
+## Usage
+
+### Node.js
+
+```
+const RelyingParty = require('@trust/oidc-rp')
+```
+
+### Browser
+
+When loaded into an HTML page via `<script src="./dist/oidc.rp.min.js"></script>`,
+the library is exposed as a global var, `OIDC`.
+
+
+## Develop
+
+### Install
+
+```bash
+$ git clone git@github.com:anvilresearch/oidc-rp.git
+$ cd oidc-rp
+$ npm install
+```
+
+### Build
 
 To build a Webpack-generated bundle:
 
@@ -42,25 +78,78 @@ To build a Webpack-generated bundle:
 npm run dist
 ```
 
-When loaded into an HTML page via `<script src="./dist/oidc.rp.min.js"></script>`,
-the library is exposed as a global var, `OIDC`.
-
-## Running tests
-
-### Nodejs
+### Test
 
 ```bash
-$ npm test
+$ npm test        // Node.js
+$ npm run karma   // Karma (browser)
 ```
 
-### Browser (karma)
+## API
 
-```bash
-$ npm run karma
-```
+...
+
+## Maintainers
+
+...
+
+## Contribute
+
+### Issues
+
+* please file [issues](https://github.com/anvilresearch/oidc-rp/issues) :)
+* for bug reports, include relevant details such as platform, version, relevant data, and stack traces
+* be sure to check for existing issues before opening new ones
+* read the documentation before asking questions
+* it's strongly recommended to open an issue before hacking and submitting a PR
+* we reserve the right to close an issue for excessive bikeshedding
+
+### Pull requests
+
+#### Policy
+
+* we're not presently accepting *unsolicited* pull requests
+* create an issue to discuss proposed features before submitting a pull request
+* create an issue to propose changes of code style or introduce new tooling
+* ensure your work is harmonious with the overall direction of the project
+* ensure your work does not duplicate existing effort
+* keep the scope compact; avoid PRs with more than one feature or fix
+* code review with maintainers is required before any merging of pull requests
+* new code must respect the style guide and overall architecture of the project
+* be prepared to defend your work
+
+#### Style guide
+
+* ES6
+* Standard JavaScript
+* jsdocs
+
+#### Code reviews
+
+* required before merging PRs
+* reviewers SHOULD run the code under review
+
+### Collaborating
+
+#### Weekly project meeting
+
+* Thursdays from 1:00 PM to 2:00 Eastern US time at [TBD]
+* Join remotely with Google Hangouts
+
+#### Pair programming
+
+* Required for new contributors
+* Work directly with one or more members of the core development team
+
+### Code of conduct
+
+* @trust/oidc-rp follows the [Contributor Covenant](http://contributor-covenant.org/version/1/3/0/) Code of Conduct.
+
+### Contributors
+
+* Christian Smith [@christiansmith](https://github.com/christiansmith)
+* Dmitri Zagidulin [@dmitrizagidulin](https://github.com/dmitrizagidulin)
 
 ## MIT License
 
 Copyright (c) 2016 Anvil Research, Inc.
-
-
