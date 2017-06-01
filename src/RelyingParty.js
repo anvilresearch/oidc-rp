@@ -94,6 +94,10 @@ class RelyingParty extends JSONDocument {
       rp.provider.jwks = jwks
       return rp
     })
+      .catch(error => {
+        console.error('Error in RelyingParty.from() while importing keys', error)
+        throw error
+      })
   }
 
   /**
@@ -115,45 +119,49 @@ class RelyingParty extends JSONDocument {
 
     return Promise.resolve()
       .then(() => rp.discover())
-      .catch(err => {
-        console.error('Error in RP register() > discover() step:', err)
-        throw err
-      })
       .then(() => rp.jwks())
-      .catch(err => {
-        console.error('Error in RP register() > jwks() step:', err)
-        throw err
-      })
       .then(() => rp.register(registration))
-      .catch(err => {
-        console.error('Error in RP register() > register() step:', err)
-        throw err
-      })
       .then(() => rp)
+      .catch(error => {
+        console.error('Error in RelyingParty.register():', error)
+      })
   }
 
   /**
    * Discover
    *
    * @description Fetches the issuer's OpenID Configuration.
+   *
    * @returns {Promise<Object>} Resolves with the provider configuration response
    */
   discover () {
+    let issuer
+
+    let endpoint = '.well-known/openid-configuration'
+
     try {
-      let issuer = this.provider.url
-      let endpoint = '.well-known/openid-configuration'
+      assert(this.provider, 'RelyingParty requires a provider')
+
+      issuer = this.provider.url
 
       assert(issuer, 'RelyingParty provider must define "url"')
-
-      return fetch(`${issuer}/${endpoint}`)
-        //.then(status(200))
-        .then(response => {
-          return response.json().then(json => this.provider.configuration = json)
-        })
-
     } catch (error) {
+      console.error('Error in rp.discover() setup:', error)
       return Promise.reject(error)
     }
+
+    return fetch(`${issuer}/${endpoint}`)
+    //.then(status(200))
+      .then(response => response.json())
+      .then(json => {
+        this.provider.configuration = json
+
+        return json
+      })
+      .catch(error => {
+        console.error('Error in rp.discover() while fetching provider config')
+        throw error
+      })
   }
 
   /**
@@ -165,29 +173,45 @@ class RelyingParty extends JSONDocument {
    * @returns {Promise<Object>} Resolves with the registration response object
    */
   register (options) {
+    let uri, method, headers, params, body
+
     try {
       let configuration = this.provider.configuration
 
       assert(configuration, 'OpenID Configuration is not initialized.')
-      assert(configuration.registration_endpoint, 'OpenID Configuration is missing registration_endpoint.')
+      assert(configuration.registration_endpoint,
+        'OpenID Configuration is missing registration_endpoint.')
 
-      let uri = configuration.registration_endpoint
-      let method = 'post'
-      let headers = new Headers({ 'Content-Type': 'application/json' })
-      let params = this.defaults.register
-      let body = JSON.stringify(Object.assign({}, params, options))
+      uri = configuration.registration_endpoint
+      console.log(configuration)
 
-      return fetch(uri, {method, headers, body})
-        //.then(status)
-        .then(response => {
-          return response.json().then(json => this.registration = json)
-        })
-
+      method = 'post'
+      headers = new Headers({ 'Content-Type': 'application/json' })
+      params = this.defaults.register
+      body = JSON.stringify(Object.assign({}, params, options))
     } catch (error) {
+      console.error('Error in rp.register() setup:', error)
       return Promise.reject(error)
     }
+
+    return fetch(uri, {method, headers, body})
+    //.then(status)
+      .then(response => response.json())
+      .then(json => {
+        this.registration = json
+        return json
+      })
+      .catch(error => {
+        console.error('Error in rp.register() during POST to registration endpoint')
+        throw error
+      })
   }
 
+  /**
+   * serialize
+   *
+   * @returns {string}
+   */
   serialize () {
     return JSON.stringify(this)
   }
@@ -199,26 +223,33 @@ class RelyingParty extends JSONDocument {
    * @returns {Promise}
    */
   jwks () {
+    let uri
+
     try {
       let configuration = this.provider.configuration
 
       assert(configuration, 'OpenID Configuration is not initialized.')
       assert(configuration.jwks_uri, 'OpenID Configuration is missing jwks_uri.')
 
-      let uri = configuration.jwks_uri
-
-      return fetch(uri)
-        //.then(status(200))
-        .then(response => {
-          return response
-            .json()
-            .then(json => JWKSet.importKeys(json))
-            .then(jwks => this.provider.jwks = jwks)
-        })
-
+      uri = configuration.jwks_uri
     } catch (error) {
+      console.error('Error in rp.jwks() setup:', error)
       return Promise.reject(error)
     }
+
+    return fetch(uri)
+    //.then(status(200))
+      .then(response => {
+        return JWKSet.importKeys(response.json())
+      })
+      .then(jwks => {
+        this.provider.jwks = jwks
+        return jwks
+      })
+      .catch(error => {
+        console.error(`Error in rp.jwks() while fetching ${uri} :`, error)
+        throw error
+      })
   }
 
   /**
@@ -232,6 +263,10 @@ class RelyingParty extends JSONDocument {
    */
   createRequest (options, session) {
     return AuthenticationRequest.create(this, options, session || this.store)
+      .catch(error => {
+        console.error('Error in rp.createRequest(), options:', options)
+        throw error
+      })
   }
 
   /**
@@ -252,6 +287,10 @@ class RelyingParty extends JSONDocument {
     }
 
     return AuthenticationResponse.validateResponse(response)
+      .catch(error => {
+        console.error('Error in rp.validateResponse(), response:', response)
+        throw error
+      })
   }
 
   /**
@@ -261,31 +300,38 @@ class RelyingParty extends JSONDocument {
    * @returns {Promise}
    */
   userinfo () {
+    let uri, headers
+
     try {
       let configuration = this.provider.configuration
 
       assert(configuration, 'OpenID Configuration is not initialized.')
-      assert(configuration.registration_endpoint, 'OpenID Configuration is missing registration_endpoint.')
+      assert(configuration.registration_endpoint,
+        'OpenID Configuration is missing registration_endpoint.')
 
-      let uri = configuration.userinfo_endpoint
+      uri = configuration.userinfo_endpoint
       let access_token = this.session.access_token
 
       assert(access_token, 'Missing access token.')
 
-      let headers = new Headers({
+      headers = new Headers({
         'Content-Type': 'application/json',
         'Authorization': `Bearer ${access_token}`
       })
-
-      return fetch(uri, {headers})
-        .then(status(200))
-        .then(response => {
-          return response.json()
-        })
-
     } catch (error) {
+      console.error('Error in rp.userinfo() setup:', error)
       return Promise.reject(error)
     }
+
+    return fetch(uri, {headers})
+      .then(status(200))
+      .then(response => {
+        return response.json()
+      })
+      .catch(error => {
+        console.error('Error while fetching rp.userinfo():', error)
+        throw error
+      })
   }
 
   /**
@@ -302,6 +348,7 @@ class RelyingParty extends JSONDocument {
       assert(configuration.end_session_endpoint,
         'OpenID Configuration is missing end_session_endpoint.')
     } catch (error) {
+      console.error('Error in rp.logout() setup:', error)
       return Promise.reject(error)
     }
 
@@ -309,6 +356,10 @@ class RelyingParty extends JSONDocument {
     let method = 'get'
 
     return fetch(uri, {method})
+      .catch(error => {
+        console.error('Error in rp.logout() while GET /logout:', error)
+        throw error
+      })
 
     // TODO: Validate `frontchannel_logout_uri` if necessary
     /**
