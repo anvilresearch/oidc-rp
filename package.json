@@ -10,7 +10,7 @@
   "scripts": {
     "dist": "webpack --progress --colors --optimize-minimize",
     "prepublish": "npm run dist",
-    "test": "mocha -w"
+    "test": "mocha"
   },
   "repository": {
     "type": "git",
