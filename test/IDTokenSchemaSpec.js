@@ -20,31 +20,27 @@ const IDTokenSchema = require('../src/IDTokenSchema')
 /**
  * Tests
  */
-describe.skip('IDTokenSchema', () => {
-  let header, payload
-
-  before(() => {
-    header = IDTokenSchema.properties.header
-    payload = IDTokenSchema.properties.payload
-  })
+describe('IDTokenSchema', () => {
+  const header = IDTokenSchema.properties.header
+  const payload = IDTokenSchema.properties.payload
 
   it('should be an instance of JSONSchema', () => {
     IDTokenSchema.should.be.instanceof(JSONSchema)
   })
 
-  it('should require "header" to not have "x5u" property', () => {
+  it.skip('should require "header" to not have "x5u" property', () => {
     header.not.required.should.include('x5u')
   })
 
-  it('should require "header" to not have "x5c" property', () => {
+  it.skip('should require "header" to not have "x5c" property', () => {
     header.not.required.should.include('x5c')
   })
 
-  it('should require "header" to not have "jku" property', () => {
+  it.skip('should require "header" to not have "jku" property', () => {
     header.not.required.should.include('jku')
   })
 
-  it('should require "header" to not have "jwk" property', () => {
+  it.skip('should require "header" to not have "jwk" property', () => {
     header.not.required.should.include('jwk')
   })
 
@@ -69,7 +65,7 @@ describe.skip('IDTokenSchema', () => {
   })
 
   it('should define "payload.aud" items', () => {
-    payload.properties.aud.items.should.be.defined
+    payload.properties.aud.items.should.exist()
   })
 
   it('should define "payload.aud" items format', () => {
@@ -80,19 +76,25 @@ describe.skip('IDTokenSchema', () => {
     payload.properties.exp.type.should.equal('number')
   })
 
-  it('should define "payload.exp" format')
+  it('should define "payload.exp" format', () => {
+    payload.properties.exp.format.should.equal('NumericDate')
+  })
 
   it('should define "payload.iat" type', () => {
     payload.properties.iat.type.should.equal('number')
   })
 
-  it('should define "payload.iat" format')
+  it('should define "payload.iat" format', () => {
+    payload.properties.iat.format.should.equal('NumericDate')
+  })
 
   it('should define "payload.auth_time" type', () => {
     payload.properties.auth_time.type.should.equal('integer')
   })
 
-  it('should define "payload.auth_time" format')
+  it('should define "payload.auth_time" format', () => {
+    payload.properties.iat.format.should.equal('NumericDate')
+  })
 
   it('should define "payload.nonce" type', () => {
     payload.properties.nonce.type.should.equal('string')
@@ -107,7 +109,7 @@ describe.skip('IDTokenSchema', () => {
   })
 
   it('should define "payload.amr" items', () => {
-    payload.properties.amr.items.should.be.defined
+    payload.properties.amr.items.should.exist()
   })
 
   it('should define "payload.amr" items type', () => {

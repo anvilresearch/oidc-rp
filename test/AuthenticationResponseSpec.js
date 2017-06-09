@@ -5,12 +5,14 @@
  */
 const chai = require('chai')
 const chaiAsPromised = require('chai-as-promised')
+const nock = require('nock')
 
 /**
  * Assertions
  */
 chai.should()
 chai.use(chaiAsPromised)
+chai.use(require('dirty-chai'))
 let expect = chai.expect
 
 /**
@@ -247,20 +249,184 @@ describe('AuthenticationResponse', () => {
    * exchangeAuthorizationCode
    */
   describe('exchangeAuthorizationCode', () => {
-    it('should not exchange the code unless response type is exactly `code`')
+    const providerUrl = 'https://example.com'
+    const providerConfig = require('./resources/example.com/openid-configuration.json')
+
+    const tokenResponse = {
+      'access_token': '4ccesst0ken',
+      'token_type': 'bearer',
+      'id_token': '1dt0ken'
+    }
+
+    let response
+
+    beforeEach(() => {
+      response = {
+        request: {
+          'response_type': 'code',
+          'redirect_uri': 'https://app.example.com/callback'
+        },
+        params: {
+          code: 'c0d3',
+          'id_token': 'jwt',
+          'access_token': 'client4ccess',
+          'token_type': 'bearer'
+        },
+        rp: {
+          provider: { configuration: providerConfig },
+          registration: {
+            'client_id': 'client123',
+            'client_secret': 's33kret'
+          }
+        }
+      }
+    })
+
+    afterEach(() => {
+      nock.cleanAll()
+    })
+
+    it('should not exchange code unless response type is exactly `code`', () => {
+      let tokenRequest = nock(providerUrl).post('/token').reply('200')
+
+      response.request['response_type'] = 'code id_token token'
+
+      return AuthenticationResponse.exchangeAuthorizationCode(response)
+        .then(res => {
+          expect(tokenRequest.isDone()).to.be.false()
+          expect(res).to.equal(response)  // response is just passed through
+        })
+    })
+
     it('should exchange the code if response type is exactly `code`')
-    it('should throw with a public client')
-    it('should set Content-Type header')
-    it('should include grant_type in the request')
-    it('should include authozation_code in the request')
-    it('should include redirect_uri in the request')
-    it('should authenticate client with HTTP Basic credentials')
-    it('should authenticate client with form POST credentials')
+
+    it('should throw with a public client', () => {
+      delete response.rp.registration['client_secret']
+
+      return AuthenticationResponse.exchangeAuthorizationCode(response)
+        .should.be.rejectedWith(/is not a confidential client/)
+    })
+
+    it('should set Content-Type header', () => {
+      let requiredHeaders = {
+        'content-type': 'application/x-www-form-urlencoded'
+      }
+      let tokenRequest = nock(providerUrl, { reqheaders: requiredHeaders })
+        .post('/token')
+        .reply(200, tokenResponse)
+
+      return AuthenticationResponse.exchangeAuthorizationCode(response)
+        .then(() => {
+          expect(tokenRequest.isDone()).to.be.true()
+        })
+    })
+
+    it('should include grant_type in the request', () => {
+      let tokenRequest = nock(providerUrl)
+        .post('/token', /grant_type=authorization_code/)  // required body regex
+        .reply(200, tokenResponse)
+
+      return AuthenticationResponse.exchangeAuthorizationCode(response)
+        .then(() => {
+          expect(tokenRequest.isDone()).to.be.true()
+        })
+    })
+
+    it('should include code in the request', () => {
+      let tokenRequest = nock(providerUrl)
+        .post('/token', /code=c0d3/)  // required body regex
+        .reply(200, tokenResponse)
+
+      return AuthenticationResponse.exchangeAuthorizationCode(response)
+        .then(() => {
+          expect(tokenRequest.isDone()).to.be.true()
+        })
+    })
+
+    it('should include redirect_uri in the request', () => {
+      let tokenRequest = nock(providerUrl)
+        .post('/token', /redirect_uri=https%3A%2F%2Fapp.example.com%2Fcallback/)
+        .reply(200, tokenResponse)
+
+      return AuthenticationResponse.exchangeAuthorizationCode(response)
+        .then(() => {
+          expect(tokenRequest.isDone()).to.be.true()
+        })
+    })
+
+    it('should authenticate client with HTTP Basic credentials', () => {
+      let requiredHeaders = {
+        'authorization': 'Basic Y2xpZW50MTIzOnMzM2tyZXQ='
+      }
+      let tokenRequest = nock(providerUrl, { reqheaders: requiredHeaders })
+        .post('/token')
+        .reply(200, tokenResponse)
+
+      return AuthenticationResponse.exchangeAuthorizationCode(response)
+        .then(() => {
+          expect(tokenRequest.isDone()).to.be.true()
+        })
+    })
+
+    it('should authenticate client with form POST credentials', () => {
+      response.rp.registration['token_endpoint_auth_method'] = 'client_secret_post'
+
+      let tokenRequest = nock(providerUrl)
+        .post('/token', /client_id=client123&client_secret=s33kret/)
+        .reply(200, tokenResponse)
+
+      return AuthenticationResponse.exchangeAuthorizationCode(response)
+        .then(() => {
+          expect(tokenRequest.isDone()).to.be.true()
+        })
+    })
+
     it('should authenticate client with JWT')
-    it('should validate the presence of access_token in token response')
-    it('should validate the presence of token_type in token response')
-    it('should validate the presence of id_token in token response')
+
+    it('should validate the presence of access_token in token response', () => {
+      let tokenResponse = {
+        'token_type': 'bearer',
+        'id_token': '1dt0ken'
+      }
+
+      let tokenRequest = nock(providerUrl)
+        .post('/token')
+        .reply(200, tokenResponse)
+
+      return AuthenticationResponse.exchangeAuthorizationCode(response)
+        .should.be.rejectedWith('Missing access_token in token response')
+    })
+
+    it('should validate the presence of token_type in token response', () => {
+      let tokenResponse = {
+        'access_token': '4ccesst0ken',
+        'id_token': '1dt0ken'
+      }
+
+      let tokenRequest = nock(providerUrl)
+        .post('/token')
+        .reply(200, tokenResponse)
+
+      return AuthenticationResponse.exchangeAuthorizationCode(response)
+        .should.be.rejectedWith('Missing token_type in token response')
+  })
+
+    it('should validate the presence of id_token in token response', () => {
+      let tokenResponse = {
+        'access_token': '4ccesst0ken',
+        'token_type': 'bearer'
+      }
+
+      let tokenRequest = nock(providerUrl)
+        .post('/token')
+        .reply(200, tokenResponse)
+
+      return AuthenticationResponse.exchangeAuthorizationCode(response)
+        .should.be.rejectedWith('Missing id_token in token response')
+    })
+
     it('should include token response in response params')
+
     it('should return its argument')
   })
 

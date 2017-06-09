@@ -18,7 +18,7 @@ const AccessTokenSchema = require('../src/AccessTokenSchema')
 /**
  * Tests
  */
-describe.skip('AccessTokenSchema', () => {
+describe('AccessTokenSchema', () => {
   let payload
 
   before(() => {
