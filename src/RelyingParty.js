@@ -268,7 +268,7 @@ class RelyingParty extends JSONDocument {
       let configuration = this.provider.configuration
 
       assert(configuration, 'OpenID Configuration is not initialized.')
-      assert(configuration.registration_endpoint, 'OpenID Configuration is missing registration_endpoint.')
+      assert(configuration.userinfo_endpoint, 'OpenID Configuration is missing userinfo_endpoint.')
 
       let uri = configuration.userinfo_endpoint
       let access_token = this.session.access_token
