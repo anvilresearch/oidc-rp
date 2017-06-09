@@ -28,21 +28,21 @@ describe('IDTokenSchema', () => {
     IDTokenSchema.should.be.instanceof(JSONSchema)
   })
 
-  // it('should require "header" to not have "x5u" property', () => {
-  //   header.not.required.should.include('x5u')
-  // })
+  it.skip('should require "header" to not have "x5u" property', () => {
+    header.not.required.should.include('x5u')
+  })
 
-  // it('should require "header" to not have "x5c" property', () => {
-  //   header.not.required.should.include('x5c')
-  // })
+  it.skip('should require "header" to not have "x5c" property', () => {
+    header.not.required.should.include('x5c')
+  })
 
-  // it('should require "header" to not have "jku" property', () => {
-  //   header.not.required.should.include('jku')
-  // })
+  it.skip('should require "header" to not have "jku" property', () => {
+    header.not.required.should.include('jku')
+  })
 
-  // it('should require "header" to not have "jwk" property', () => {
-  //   header.not.required.should.include('jwk')
-  // })
+  it.skip('should require "header" to not have "jwk" property', () => {
+    header.not.required.should.include('jwk')
+  })
 
   it('should define "payload.iss" type', () => {
     payload.properties.iss.type.should.equal('string')
