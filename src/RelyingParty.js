@@ -5,7 +5,7 @@ const assert = require('assert')
 const fetch = require('node-fetch')
 const URL = require('urlutils')
 const Headers = fetch.Headers ? fetch.Headers : global.Headers
-const {JSONSchema, JSONDocument} = require('@trust/json-document')
+const {JSONDocument} = require('@trust/json-document')
 const {JWKSet} = require('@trust/jose')
 const AuthenticationRequest = require('./AuthenticationRequest')
 const AuthenticationResponse = require('./AuthenticationResponse')
@@ -80,7 +80,7 @@ class RelyingParty extends JSONDocument {
 
     // schema validation
     if (!validation.valid) {
-      return Promise.reject(validation)
+      return Promise.reject(new Error(JSON.stringify(validation)))
     }
 
     let jwks = rp.provider.jwks
@@ -271,7 +271,7 @@ class RelyingParty extends JSONDocument {
       assert(configuration.userinfo_endpoint, 'OpenID Configuration is missing userinfo_endpoint.')
 
       let uri = configuration.userinfo_endpoint
-      let access_token = this.session.access_token
+      let access_token = this.store.access_token
 
       assert(access_token, 'Missing access token.')
 
@@ -281,7 +281,7 @@ class RelyingParty extends JSONDocument {
       })
 
       return fetch(uri, {headers})
-        .then(status(200))
+        // .then(status(200))
         .then(response => {
           return response.json()
         })
