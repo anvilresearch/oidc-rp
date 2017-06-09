@@ -1,6 +1,6 @@
 {
   "name": "@trust/oidc-rp",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "description": "OpenID Connect Relying Party client library",
   "main": "src/index.js",
   "files": [
