@@ -199,7 +199,7 @@ class AuthenticationResponse {
    * exchangeAuthorizationCode
    *
    * @param {Object} response
-   * @returns {Promise}
+   * @returns {Promise} response object
    */
   static exchangeAuthorizationCode (response) {
     let {rp, params, request} = response
@@ -216,9 +216,9 @@ class AuthenticationResponse {
 
     // verify the client is not public
     if (!secret) {
-        throw new AuthenticationError(
+        return Promise.reject(new Error(
           'Client cannot exchange authorization code because ' +
-          'it is not a confidential client')
+          'it is not a confidential client'))
     }
 
     // initialize token request arguments
@@ -231,11 +231,11 @@ class AuthenticationResponse {
     })
 
     // initialize the token request parameters
-    let body = FormUrlEncoded.encode({
+    let bodyContents = {
       'grant_type': 'authorization_code',
       'code': code,
       'redirect_uri': request['redirect_uri']
-    })
+    }
 
     // determine client authentication method
     let authMethod = registration['token_endpoint_auth_method']
@@ -249,15 +249,18 @@ class AuthenticationResponse {
 
     // client secret post authentication
     if (authMethod === 'client_secret_post') {
-      body['client_id'] = id
-      body['client_secret'] = secret
+      bodyContents['client_id'] = id
+      bodyContents['client_secret'] = secret
     }
+
+    let body = FormUrlEncoded.encode(bodyContents)
 
     // TODO
     // client_secret_jwt authentication
     // private_key_jwt
 
     // make the token request
+
     return fetch(endpoint, {method, headers, body})
       .then(tokenResponse => tokenResponse.json())
       .then(tokenResponse => {
