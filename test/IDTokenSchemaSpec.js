@@ -65,7 +65,7 @@ describe('IDTokenSchema', () => {
   })
 
   it('should define "payload.aud" items', () => {
-    payload.properties.aud.items.should.be.defined
+    payload.properties.aud.items.should.exist()
   })
 
   it('should define "payload.aud" items format', () => {
@@ -109,7 +109,7 @@ describe('IDTokenSchema', () => {
   })
 
   it('should define "payload.amr" items', () => {
-    payload.properties.amr.items.should.be.defined
+    payload.properties.amr.items.should.exist()
   })
 
   it('should define "payload.amr" items type', () => {
