@@ -6,11 +6,13 @@
 const chai = require('chai')
 const chaiAsPromised = require('chai-as-promised')
 const nock = require('nock')
+const sinon = require('sinon')
 
 /**
  * Assertions
  */
 chai.should()
+chai.use(require('sinon-chai'))
 chai.use(chaiAsPromised)
 chai.use(require('dirty-chai'))
 let expect = chai.expect
@@ -18,7 +20,7 @@ let expect = chai.expect
 /**
  * Code under test
  */
-const {JWT} = require('@trust/jose')
+const {JWT, JWKSet} = require('@trust/jose')
 const IDToken = require('../src/IDToken')
 const AuthenticationResponse = require('../src/AuthenticationResponse')
 const {RsaPrivateCryptoKey, RsaPublicCryptoKey} = require('./keys')
@@ -27,6 +29,11 @@ const {RsaPrivateCryptoKey, RsaPublicCryptoKey} = require('./keys')
  * Tests
  */
 describe('AuthenticationResponse', () => {
+  const providerJwks = require('./resources/example.com/jwks.json')
+
+  afterEach(() => {
+    nock.cleanAll()
+  })
 
   /**
    * parseResponse
@@ -280,10 +287,6 @@ describe('AuthenticationResponse', () => {
           }
         }
       }
-    })
-
-    afterEach(() => {
-      nock.cleanAll()
     })
 
     it('should not exchange code unless response type is exactly `code`', () => {
@@ -554,6 +557,51 @@ describe('AuthenticationResponse', () => {
   /**
    * resolveKeys
    */
+  describe('resolveKeys', () => {
+    let response
+
+    beforeEach(() => {
+      response = {
+        rp: {
+          provider: {},
+          jwks: sinon.stub().resolves(providerJwks)
+        },
+        decoded: {
+          resolveKeys: sinon.stub().withArgs(providerJwks).returns(true)
+        }
+      }
+    })
+
+    it('should request keys from provider if necessary', () => {
+      return AuthenticationResponse.resolveKeys(response)
+        .then(res => {
+          expect(response.rp.jwks).to.have.been.called()
+          expect(res).to.equal(response)
+        })
+    })
+
+    it('should use already imported keys if available', () => {
+      return JWKSet.importKeys(providerJwks)
+        .then(jwks => { response.rp.provider.jwks = jwks })
+
+        .then(() => AuthenticationResponse.resolveKeys(response))
+        .then(res => {
+          expect(response.rp.jwks).to.not.have.been.called()
+          expect(res).to.equal(response)
+        })
+    })
+
+    it('should throw an error if token resolve keys operation fails', done => {
+      response.decoded.resolveKeys = sinon.stub()
+        .withArgs(providerJwks).returns(false)
+
+      AuthenticationResponse.resolveKeys(response)
+        .catch(err => {
+          expect(err.message).to.match(/Cannot resolve signing key for ID Token/)
+          done()
+        })
+    })
+  })
 
   /**
    * verifySignature
