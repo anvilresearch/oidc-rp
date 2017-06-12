@@ -165,6 +165,21 @@ describe('RelyingParty', () => {
           expect(rp.provider.configuration).to.eql(providerConfig)
         })
     })
+
+    it('should reject on an http error', done => {
+      nock('https://notfound').get('/.well-known/openid-configuration')
+        .reply(404)
+
+      let rp = new RelyingParty({ provider: { url: 'https://notfound' }})
+
+      rp.discover()
+        .catch(err => {
+          expect(err.message)
+            .to.match(/Error fetching openid configuration: 404 Not Found/)
+          done()
+        })
+
+    })
   })
 
   describe('jwks', () => {
@@ -209,6 +224,24 @@ describe('RelyingParty', () => {
           expect(jwks.keys[0].alg).to.equal('RS256')
         })
     })
+
+    it('should reject on http error', done => {
+      let providerUrl = 'https://notfound'
+
+      nock(providerUrl).get('/jwks').reply(404)
+
+      let provider = {
+        url: providerUrl,
+        configuration: { jwks_uri: providerUrl + '/jwks' }
+      }
+      let rp = new RelyingParty({ provider })
+
+      rp.jwks()
+        .catch(err => {
+          expect(err.message).to.match(/Error resolving provider keys/)
+          done()
+        })
+    })
   })
 
   describe('logout', () => {
@@ -241,6 +274,26 @@ describe('RelyingParty', () => {
       return rp.logout()
         .then(() => {
           expect(logoutRequest.isDone()).to.be.true()
+        })
+    })
+
+    it('should reject on http error', done => {
+      let providerUrl = 'https://notfound'
+
+      nock(providerUrl).get('/logout').reply(404)
+
+      let provider = {
+        url: providerUrl,
+        configuration: {
+          end_session_endpoint: 'https://notfound/logout'
+        }
+      }
+      let rp = new RelyingParty({ provider })
+
+      rp.logout()
+        .catch(err => {
+          expect(err.message).to.match(/Error logging out: 404 Not Found/)
+          done()
         })
     })
   })
@@ -306,6 +359,26 @@ describe('RelyingParty', () => {
           expect(rp.registration).to.eql(rpRegistration)
         })
     })
+
+    it('should reject on an http error', done => {
+      nock('https://notfound').post('/register').reply(404)
+
+      let options = {
+        provider: {
+          configuration: {
+            issuer: 'https://notfound',
+            'registration_endpoint': 'https://notfound/register'
+          }
+        }
+      }
+      let rp = new RelyingParty(options)
+
+      rp.register()
+        .catch(err => {
+          expect(err.message).to.match(/Error registering client: 404 Not Found/)
+          done()
+        })
+    })
   })
 
   describe('userinfo', () => {
@@ -353,6 +426,27 @@ describe('RelyingParty', () => {
         .then(res => {
           expect(res).to.eql(userinfo)
           expect(userInfoReq.isDone()).to.be.true()
+        })
+    })
+
+    it('should reject on an http error', done => {
+      nock('https://notfound').get('/userinfo').reply(404)
+
+      let options = {
+        provider: {
+          configuration: {
+            issuer: 'https://notfound',
+            'userinfo_endpoint': 'https://notfound/userinfo'
+          }
+        },
+        store: { 'access_token': '1234' }
+      }
+      let rp = new RelyingParty(options)
+
+      rp.userinfo()
+        .catch(err => {
+          expect(err.message).to.match(/Error fetching userinfo: 404 Not Found/)
+          done()
         })
     })
   })

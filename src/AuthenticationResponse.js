@@ -9,7 +9,7 @@ const fetch = require('node-fetch')
 const Headers = fetch.Headers ? fetch.Headers : global.Headers
 const FormUrlEncoded = require('./FormUrlEncoded')
 const IDToken = require('./IDToken')
-//const AccessToken = require('./AccessToken')
+const onHttpError = require('./onHttpError')
 
 /**
  * AuthenticationResponse
@@ -262,6 +262,7 @@ class AuthenticationResponse {
     // make the token request
 
     return fetch(endpoint, {method, headers, body})
+      .then(onHttpError('Error exchanging authorization code'))
       .then(tokenResponse => tokenResponse.json())
       .then(tokenResponse => {
         assert(tokenResponse['access_token'],
