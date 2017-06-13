@@ -10,7 +10,7 @@ const {JWKSet} = require('@trust/jose')
 const AuthenticationRequest = require('./AuthenticationRequest')
 const AuthenticationResponse = require('./AuthenticationResponse')
 const RelyingPartySchema = require('./RelyingPartySchema')
-// const Session = require('./Session')
+const onHttpError = require('./onHttpError')
 
 /**
  * RelyingParty
@@ -116,20 +116,8 @@ class RelyingParty extends JSONDocument {
 
     return Promise.resolve()
       .then(() => rp.discover())
-      .catch(err => {
-        console.error('Error in RP register() > discover() step:', err)
-        throw err
-      })
       .then(() => rp.jwks())
-      .catch(err => {
-        console.error('Error in RP register() > jwks() step:', err)
-        throw err
-      })
       .then(() => rp.register(registration))
-      .catch(err => {
-        console.error('Error in RP register() > register() step:', err)
-        throw err
-      })
       .then(() => rp)
   }
 
@@ -149,7 +137,7 @@ class RelyingParty extends JSONDocument {
       url.pathname = '.well-known/openid-configuration'
 
       return fetch(url.toString())
-        //.then(status(200))
+        .then(onHttpError('Error fetching openid configuration'))
         .then(response => {
           return response.json().then(json => this.provider.configuration = json)
         })
@@ -181,7 +169,7 @@ class RelyingParty extends JSONDocument {
       let body = JSON.stringify(Object.assign({}, params, options))
 
       return fetch(uri, {method, headers, body})
-        //.then(status)
+        .then(onHttpError('Error registering client'))
         .then(response => {
           return response.json().then(json => this.registration = json)
         })
@@ -211,7 +199,7 @@ class RelyingParty extends JSONDocument {
       let uri = configuration.jwks_uri
 
       return fetch(uri)
-        //.then(status(200))
+        .then(onHttpError('Error resolving provider keys'))
         .then(response => {
           return response
             .json()
@@ -281,10 +269,8 @@ class RelyingParty extends JSONDocument {
       })
 
       return fetch(uri, {headers})
-        // .then(status(200))
-        .then(response => {
-          return response.json()
-        })
+        .then(onHttpError('Error fetching userinfo'))
+        .then(response => response.json())
 
     } catch (error) {
       return Promise.reject(error)
@@ -312,6 +298,7 @@ class RelyingParty extends JSONDocument {
     let method = 'get'
 
     return fetch(uri, {method})
+      .then(onHttpError('Error logging out'))
 
     // TODO: Validate `frontchannel_logout_uri` if necessary
     /**

@@ -428,6 +428,22 @@ describe('AuthenticationResponse', () => {
     it('should include token response in response params')
 
     it('should return its argument')
+
+    it('should reject on an http error', done => {
+      let providerUrl = 'https://notfound'
+
+      nock(providerUrl).post('/token').reply(404)
+
+      response.rp.provider.configuration.url = providerUrl
+      response.rp.provider.configuration['token_endpoint'] = providerUrl + '/token'
+
+      AuthenticationResponse.exchangeAuthorizationCode(response)
+        .catch(err => {
+          expect(err.message)
+            .to.match(/Error exchanging authorization code: 404 Not Found/)
+          done()
+        })
+    })
   })
 
   /**
