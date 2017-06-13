@@ -404,21 +404,19 @@ class AuthenticationResponse {
   static resolveKeys (response) {
     let rp = response.rp
     let provider = rp.provider
-    let jwks = provider.jwks
     let decoded = response.decoded
 
+    return Promise.resolve(provider.jwks)
 
-    //if (decoded.resolveKeys(jwks)) {
-    //  return Promise.resolve(response)
-    //}
+      .then(jwks => jwks ? jwks : rp.jwks())
 
-    return rp.jwks().then(jwks => {
-      if (decoded.resolveKeys(jwks)) {
-        return Promise.resolve(response)
-      } else {
-        throw new Error('Cannot resolve signing key for ID Token.')
-      }
-    })
+      .then(jwks => {
+        if (decoded.resolveKeys(jwks)) {
+          return Promise.resolve(response)
+        } else {
+          throw new Error('Cannot resolve signing key for ID Token')
+        }
+      })
   }
 
   /**
