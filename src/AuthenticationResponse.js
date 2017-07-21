@@ -61,7 +61,7 @@ class AuthenticationResponse {
       let url = new URL(redirect)
       let {search, hash} = url
 
-      if (search && hash) {
+      if ((search && hash) || (!search && !hash)) {
         throw new Error('Invalid response mode')
       }
 

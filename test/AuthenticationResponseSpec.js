@@ -56,6 +56,14 @@ describe('AuthenticationResponse', () => {
       }).to.throw('Invalid response mode')
     })
 
+    it('should throw without query and fragment', () => {
+      expect(() => {
+        AuthenticationResponse.parseResponse({
+          redirect: 'https://example.com/callback'
+        })
+      }).to.throw('Invalid response mode')
+    })
+
     it('should parse query response', () => {
       let response = { redirect: 'https://example.com/callback?code=1234' }
       AuthenticationResponse.parseResponse(response)
