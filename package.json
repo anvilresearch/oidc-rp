@@ -37,7 +37,7 @@
   "homepage": "https://github.com/anvilresearch/oidc-rp#readme",
   "dependencies": {
     "base64url": "^2.0.0",
-    "@trust/jose": "^0.1.2",
+    "@trust/jose": "^0.1.6",
     "@trust/json-document": "^0.1.4",
     "node-fetch": "^1.7.1",
     "text-encoding": "^0.6.1",
