@@ -5,11 +5,13 @@
  */
 const chai = require('chai')
 const chaiAsPromised = require('chai-as-promised')
+const sinon = require('sinon')
 
 /**
  * Assertions
  */
 chai.should()
+chai.use(require('dirty-chai'))
 chai.use(chaiAsPromised)
 let expect = chai.expect
 
@@ -49,6 +51,14 @@ describe('AuthenticationRequest', () => {
   })
 
   describe('create', () => {
+    before(() => {
+       sinon.stub(AuthenticationRequest, 'generateSessionKeys').resolves()
+    })
+
+    after(() => {
+      AuthenticationRequest.generateSessionKeys.restore()
+    })
+
     it('should return a promise', () => {
       AuthenticationRequest.create(rp, options, session)
         .should.be.instanceof(Promise)
@@ -194,6 +204,29 @@ describe('AuthenticationRequest', () => {
     })
 
     it('should optionally encode parameters as JWT')
+  })
+
+  describe('generateSessionKeys', () => {
+    let sessionKeys
+
+    before(() => {
+      return AuthenticationRequest.generateSessionKeys()
+        .then(keys => sessionKeys = keys)
+    })
+
+    it('generates a private signing key', () => {
+      let privateJwk = sessionKeys.private
+
+      expect(privateJwk.alg).to.equal('RS256')
+      expect(privateJwk.key_ops).to.eql([ 'sign' ])
+    })
+
+    it('generates a public verification key', () => {
+      let publicJwk = sessionKeys.public
+
+      expect(publicJwk.alg).to.equal('RS256')
+      expect(publicJwk.key_ops).to.eql([ 'verify' ])
+    })
   })
 })
 
