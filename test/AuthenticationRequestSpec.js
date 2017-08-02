@@ -11,8 +11,8 @@ const sinon = require('sinon')
  * Assertions
  */
 chai.should()
-chai.use(require('dirty-chai'))
 chai.use(chaiAsPromised)
+chai.use(require('dirty-chai'))
 let expect = chai.expect
 
 /**
@@ -52,7 +52,7 @@ describe('AuthenticationRequest', () => {
 
   describe('create', () => {
     before(() => {
-       sinon.stub(AuthenticationRequest, 'generateSessionKeys').resolves()
+       sinon.stub(AuthenticationRequest, 'generateSessionKeys').resolves({})
     })
 
     after(() => {
@@ -128,32 +128,35 @@ describe('AuthenticationRequest', () => {
 
     it('should persist the request to session by `state` param', () => {
       return AuthenticationRequest.create(rp, options, session).then(() => {
-        for (let key in session) {
-          key.should.include('https://forge.anvil.io/requestHistory/')
-          key.split('/').pop().length.should.equal(43)
-        }
+        let requestKey = Object.keys(session)
+          .find(k => k.startsWith('https://forge.anvil.io/requestHistory/'))
+
+        expect(requestKey).to.exist()
+        expect(requestKey.split('/').pop().length).to.equal(43)
       })
     })
 
     it('should persist the random octets for `state` to session', () => {
       return AuthenticationRequest.create(rp, options, session).then(() => {
-        for (let key in session) {
-          let octets = JSON.parse(session[key]).state
-          octets.forEach(octet => {
-            expect(Number.isInteger(octet)).to.equal(true)
-          })
-        }
+        let requestKey = Object.keys(session)
+          .find(k => k.startsWith('https://forge.anvil.io/requestHistory/'))
+
+        let octets = JSON.parse(session[requestKey]).state
+        octets.forEach(octet => {
+          expect(Number.isInteger(octet)).to.equal(true)
+        })
       })
     })
 
     it('should persist the random octets for `nonce` to session', () => {
       return AuthenticationRequest.create(rp, options, session).then(() => {
-        for (let key in session) {
-          let octets = JSON.parse(session[key]).nonce
-          octets.forEach(octet => {
-            expect(Number.isInteger(octet)).to.equal(true)
-          })
-        }
+        let requestKey = Object.keys(session)
+          .find(k => k.startsWith('https://forge.anvil.io/requestHistory/'))
+
+        let octets = JSON.parse(session[requestKey]).nonce
+        octets.forEach(octet => {
+          expect(Number.isInteger(octet)).to.equal(true)
+        })
       })
     })
 
@@ -229,4 +232,3 @@ describe('AuthenticationRequest', () => {
     })
   })
 })
-

@@ -99,15 +99,11 @@ class AuthenticationRequest {
 
       .then(() => AuthenticationRequest.generateSessionKeys())
 
-      .then(sessionKeys => {
-        // store the private one in session, public one goes into params
-      })
+      .then(sessionKeys => AuthenticationRequest.storeSessionKeys(sessionKeys, params, session))
 
       // optionally encode a JWT with the request parameters
+      // and replace params with `{ request: <jwt> }
       .then(() => {
-        // TODO
-        // optionally encode the request parameters as a JWT
-        // and replace params with `{ request: <jwt> }`
       })
 
       // render the request URI and terminate the algorithm
@@ -142,6 +138,12 @@ class AuthenticationRequest {
 
         return { public: publicJwk, private: privateJwk }
       })
+  }
+
+  static storeSessionKeys (sessionKeys, params, session) {
+    // store the private one in session, public one goes into params
+    session['oidc.session.privateKey'] = sessionKeys.private
+    params.key = sessionKeys.public
   }
 }
 
