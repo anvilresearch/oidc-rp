@@ -294,6 +294,8 @@ class RelyingParty extends JSONDocument {
       return Promise.reject(error)
     }
 
+    this.clearSession()
+
     let uri = configuration.end_session_endpoint
     let method = 'get'
 
@@ -313,6 +315,14 @@ class RelyingParty extends JSONDocument {
      * included.
      * @see https://openid.net/specs/openid-connect-frontchannel-1_0.html#RPLogout
      */
+  }
+
+  clearSession () {
+    let session = this.store
+
+    if (!session) { return }
+
+    delete session['oidc.session.privateKey']
   }
 }
 
