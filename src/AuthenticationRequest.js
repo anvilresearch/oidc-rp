@@ -97,6 +97,12 @@ class AuthenticationRequest {
         params.nonce = nonce
       })
 
+      .then(() => AuthenticationRequest.generateSessionKeys())
+
+      .then(sessionKeys => {
+        // store the private one in session, public one goes into params
+      })
+
       // optionally encode a JWT with the request parameters
       .then(() => {
         // TODO
@@ -108,7 +114,33 @@ class AuthenticationRequest {
       .then(() => {
         let url = new URL(endpoint)
         url.search = FormUrlEncoded.encode(params)
-        resolve(url.href)
+
+        return url.href
+      })
+  }
+
+  static generateSessionKeys () {
+    return crypto.subtle.generateKey(
+      {
+        name: "RSASSA-PKCS1-v1_5",
+        modulusLength: 2048,
+        publicExponent: new Uint8Array([0x01, 0x00, 0x01]),
+        hash: { name: "SHA-256" },
+      },
+      true,
+      ["sign", "verify"]
+    )
+      .then((keyPair) => {
+        //returns a keypair object
+        return Promise.all([
+          crypto.subtle.exportKey('jwk', keyPair.publicKey),
+          crypto.subtle.exportKey('jwk', keyPair.privateKey)
+        ])
+      })
+      .then(jwkPair => {
+        let [ publicJwk, privateJwk ] = jwkPair
+
+        return { public: publicJwk, private: privateJwk }
       })
   }
 }
