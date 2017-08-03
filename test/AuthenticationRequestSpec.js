@@ -19,6 +19,7 @@ let expect = chai.expect
  * Code under test
  */
 const AuthenticationRequest = require('../src/AuthenticationRequest')
+const TestKeys = require('./keys/index')
 
 /**
  * Tests
@@ -229,6 +230,50 @@ describe('AuthenticationRequest', () => {
 
       expect(publicJwk.alg).to.equal('RS256')
       expect(publicJwk.key_ops).to.eql([ 'verify' ])
+    })
+  })
+
+  describe.only('storeSessionKeys', () => {
+    let sessionKeys, params, session
+
+    before(() => {
+      params = {}
+      session = {}
+      sessionKeys = TestKeys.sampleSessionKeys
+
+      AuthenticationRequest.storeSessionKeys(sessionKeys, params, session)
+    })
+
+    it('stores the public session key in params', () => {
+      expect(params.key).to.equal(sessionKeys.public)
+    })
+
+    it('stores the serialized private key in session storage', () => {
+      let key = 'oidc.session.privateKey'
+      expect(session[key]).to.equal(TestKeys.serializedPrivateKey)
+    })
+  })
+
+  describe('encodeRequestParams', () => {
+    it('should encode all non-OAuth2 required params inside the request jwt', () => {
+      const params = {
+        client_id: 'client123',
+        redirect_uri: 'https://example.com/callback',
+        scope: 'openid profile',
+        key: { alg: 'RS256', key_ops: ['verify'] },
+        response_type: 'id_token token',
+        display: 'popup'
+      }
+
+      return AuthenticationRequest.encodeRequestParams(params)
+        .then(result => {
+          expect(result).to.eql({
+            scope: 'openid profile',
+            client_id: 'client123',
+            redirect_uri: 'https://example.com/callback',
+            request: 'eyJhbGciOiJub25lIn0.eyJrZXkiOnsiYWxnIjoiUlMyNTYiLCJrZXlfb3BzIjpbInZlcmlmeSJdfSwicmVzcG9uc2VfdHlwZSI6ImlkX3Rva2VuIHRva2VuIiwiZGlzcGxheSI6InBvcHVwIn0.'
+          })
+        })
     })
   })
 })

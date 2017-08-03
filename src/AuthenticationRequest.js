@@ -4,6 +4,7 @@
 const assert = require('assert')
 const base64url = require('base64url')
 const crypto = require('@trust/webcrypto')
+const { JWT } = require('@trust/jose')
 const FormUrlEncoded = require('./FormUrlEncoded')
 const URL = require('urlutils')
 
@@ -99,11 +100,18 @@ class AuthenticationRequest {
 
       .then(() => AuthenticationRequest.generateSessionKeys())
 
-      .then(sessionKeys => AuthenticationRequest.storeSessionKeys(sessionKeys, params, session))
+      .then(sessionKeys => {
+        AuthenticationRequest.storeSessionKeys(sessionKeys, params, session)
+      })
 
       // optionally encode a JWT with the request parameters
       // and replace params with `{ request: <jwt> }
       .then(() => {
+        if (provider.configuration.request_parameter_supported) {
+          return AuthenticationRequest.encodeRequestParams(params)
+
+            .then(encodedParams => { params = encodedParams })
+        }
       })
 
       // render the request URI and terminate the algorithm
@@ -142,8 +150,39 @@ class AuthenticationRequest {
 
   static storeSessionKeys (sessionKeys, params, session) {
     // store the private one in session, public one goes into params
-    session['oidc.session.privateKey'] = sessionKeys.private
+    session['oidc.session.privateKey'] = JSON.stringify(sessionKeys.private)
     params.key = sessionKeys.public
+  }
+
+  static encodeRequestParams (params) {
+    const excludeParams = ['scope', 'client_id', 'response_type', 'state', 'redirect_uri']
+
+    const keysToEncode = Object.keys(params).filter(key => !excludeParams.includes(key))
+
+    let payload = {}
+
+    keysToEncode.forEach(key => {
+      payload[key] = params[key]
+    })
+
+    let requestParamJwt = new JWT({
+      header: { alg: 'none' },
+      payload
+    }, { filter: false })
+
+    return requestParamJwt.encode()
+      .then(requestParamCompact => {
+        let newParams = {
+          scope: params['scope'],
+          client_id: params['client_id'],
+          response_type: params['response_type'],
+          redirect_uri: params['redirect_uri'],
+          request: requestParamCompact,
+          state: params['state']
+        }
+
+        return newParams
+      })
   }
 }
 

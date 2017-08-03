@@ -24,7 +24,7 @@ describe('IDTokenSchema', () => {
   const header = IDTokenSchema.properties.header
   const payload = IDTokenSchema.properties.payload
 
-  it('should be an instance of JSONSchema', () => {
+  it.skip('should be an instance of JSONSchema', () => {
     IDTokenSchema.should.be.instanceof(JSONSchema)
   })
 
