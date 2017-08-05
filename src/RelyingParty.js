@@ -11,6 +11,7 @@ const AuthenticationRequest = require('./AuthenticationRequest')
 const AuthenticationResponse = require('./AuthenticationResponse')
 const RelyingPartySchema = require('./RelyingPartySchema')
 const onHttpError = require('./onHttpError')
+const {JWK} = require('@trust/jose')
 
 /**
  * RelyingParty
@@ -322,8 +323,40 @@ class RelyingParty extends JSONDocument {
 
     if (!session) { return }
 
-    delete session['oidc.session.privateKey']
+    delete session[SESSION_PRIVATE_KEY]
+  }
+
+  /**
+   * @param uri {string} Target Resource Server URI
+   * @param idToken {IDToken} ID Token to be embedded in the PoP token
+   *
+   * @returns {Promise<PoPToken>}
+   */
+  popTokenFor (uri, idToken) {
+    return PoPToken.issueFor(uri, idToken, this)
+  }
+
+  sessionPrivateKey () {
+    if (this._sessionPrivateKey) {
+      return Promise.resolve(this._sessionPrivateKey)
+    }
+
+    return Promise.resolve()
+      .then(() => {
+        let jwk = JSON.parse(this.store[SESSION_PRIVATE_KEY])
+
+        return JWK.importKey(jwk)
+          .then(importedKey => {
+            this._sessionPrivateKey = importedKey
+
+            return importedKey
+          })
+      })
   }
 }
+
+const SESSION_PRIVATE_KEY = 'oidc.session.privateKey'
+
+RelyingParty.SESSION_PRIVATE_KEY = SESSION_PRIVATE_KEY
 
 module.exports = RelyingParty
