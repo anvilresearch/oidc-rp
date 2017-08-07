@@ -233,7 +233,7 @@ describe('AuthenticationRequest', () => {
     })
   })
 
-  describe.only('storeSessionKeys', () => {
+  describe('storeSessionKeys', () => {
     let sessionKeys, params, session
 
     before(() => {
@@ -258,6 +258,8 @@ describe('AuthenticationRequest', () => {
     it('should encode all non-OAuth2 required params inside the request jwt', () => {
       const params = {
         client_id: 'client123',
+        state: 'abcd',
+        nonce: '1234',
         redirect_uri: 'https://example.com/callback',
         scope: 'openid profile',
         key: { alg: 'RS256', key_ops: ['verify'] },
@@ -270,8 +272,9 @@ describe('AuthenticationRequest', () => {
           expect(result).to.eql({
             scope: 'openid profile',
             client_id: 'client123',
-            redirect_uri: 'https://example.com/callback',
-            request: 'eyJhbGciOiJub25lIn0.eyJrZXkiOnsiYWxnIjoiUlMyNTYiLCJrZXlfb3BzIjpbInZlcmlmeSJdfSwicmVzcG9uc2VfdHlwZSI6ImlkX3Rva2VuIHRva2VuIiwiZGlzcGxheSI6InBvcHVwIn0.'
+            response_type: 'id_token token',
+            request: 'eyJhbGciOiJub25lIn0.eyJub25jZSI6IjEyMzQiLCJyZWRpcmVjdF91cmkiOiJodHRwczovL2V4YW1wbGUuY29tL2NhbGxiYWNrIiwia2V5Ijp7ImFsZyI6IlJTMjU2Iiwia2V5X29wcyI6WyJ2ZXJpZnkiXX0sImRpc3BsYXkiOiJwb3B1cCJ9.',
+            state:'abcd'
           })
         })
     })

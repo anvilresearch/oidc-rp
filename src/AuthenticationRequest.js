@@ -155,7 +155,7 @@ class AuthenticationRequest {
   }
 
   static encodeRequestParams (params) {
-    const excludeParams = ['scope', 'client_id', 'response_type', 'state', 'redirect_uri']
+    const excludeParams = ['scope', 'client_id', 'response_type', 'state']
 
     const keysToEncode = Object.keys(params).filter(key => !excludeParams.includes(key))
 
@@ -176,7 +176,6 @@ class AuthenticationRequest {
           scope: params['scope'],
           client_id: params['client_id'],
           response_type: params['response_type'],
-          redirect_uri: params['redirect_uri'],
           request: requestParamCompact,
           state: params['state']
         }

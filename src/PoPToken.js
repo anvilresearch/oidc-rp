@@ -41,7 +41,6 @@ class PoPToken extends JWT {
    *
    * Optional:
    * @param [options.alg] {string} Algorithm for signing the id token
-   * @param [options.jti] {string} Unique JWT id (to prevent reuse)
    * @param [options.iat] {number} Issued at timestamp (in seconds)
    * @param [options.max] {number} Max token lifetime in seconds
    * @param [options.key] {JWK} Proof of Possession (private) signing key, see
@@ -59,7 +58,7 @@ class PoPToken extends JWT {
     let exp = iat + max  // token expiration
 
     let header = { alg }
-    let payload = { iss, aud, exp, iat, id_token: options.id_token }
+    let payload = { iss, aud, exp, iat, id_token: options.id_token, token_type: 'pop' }
 
     let jwt = new PoPToken({ header, payload, key: key.cryptoKey }, { filter: false })
 
