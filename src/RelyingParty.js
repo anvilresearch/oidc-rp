@@ -337,8 +337,8 @@ class RelyingParty extends JSONDocument {
   }
 
   sessionPrivateKey () {
-    if (this._sessionPrivateKey) {
-      return Promise.resolve(this._sessionPrivateKey)
+    if (this.sessionKey) {
+      return Promise.resolve(this.sessionKey)
     }
 
     return Promise.resolve()
@@ -347,7 +347,7 @@ class RelyingParty extends JSONDocument {
 
         return JWK.importKey(jwk)
           .then(importedKey => {
-            this._sessionPrivateKey = importedKey
+            this.sessionKey = importedKey
 
             return importedKey
           })
