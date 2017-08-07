@@ -3,9 +3,11 @@
   "version": "0.3.1",
   "description": "OpenID Connect Relying Party client library",
   "main": "./lib/index.js",
+  "module": "./src/index.js",
   "files": [
     "lib",
-    "dist"
+    "dist",
+    "src"
   ],
   "scripts": {
     "build": "babel src -d lib",
