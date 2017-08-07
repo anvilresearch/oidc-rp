@@ -6,20 +6,20 @@ const DEFAULT_MAX_AGE = 3600  // Default token expiration, in seconds
 
 class PoPToken extends JWT {
   /**
-   * @param providerUri {string}
-   * @param idToken {IDToken}
+   * @param resourceServerUri {string} RS URI for which this token is intended
+   * @param idToken {string} JWT compact encoded ID Token, to embed in pop token
    * @param rp {RelyingParty}
    *
    * @returns {Promise<string>} PoPToken, encoded as compact JWT
    */
-  static issueFor (providerUri, idToken, rp) {
+  static issueFor (resourceServerUri, idToken, rp) {
     const clientId = rp.registration['client_id']
 
     return rp.sessionPrivateKey()
       .then(jwk => {
         let options = {
           key: jwk,
-          aud: providerUri,
+          aud: resourceServerUri,
           iss: clientId,
           id_token: idToken
         }
@@ -35,16 +35,17 @@ class PoPToken extends JWT {
    * issue
    *
    * @param options {Object}
+   * @param options.iss {string} Token issuer (RP client_id)
    * @param options.aud {string|Array<string>} Audience for the token
-   *   (such as the Relying Party client_id)
-   * @param options.azp {string} Authorized party / Presenter (RP client_id)
+   *   (such as the Resource Server url)
+   * @param options.key {JWK} Proof of Possession (private) signing key, see
+   *   https://tools.ietf.org/html/rfc7800#section-3.1
+   *
+   * @param options.id_token {string} JWT compact encoded ID Token
    *
    * Optional:
-   * @param [options.alg] {string} Algorithm for signing the id token
    * @param [options.iat] {number} Issued at timestamp (in seconds)
    * @param [options.max] {number} Max token lifetime in seconds
-   * @param [options.key] {JWK} Proof of Possession (private) signing key, see
-   *   https://tools.ietf.org/html/rfc7800#section-3.1
    *
    * @returns {PoPToken} Proof of Possession Token (JWT instance)
    */
