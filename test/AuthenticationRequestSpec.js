@@ -5,18 +5,21 @@
  */
 const chai = require('chai')
 const chaiAsPromised = require('chai-as-promised')
+const sinon = require('sinon')
 
 /**
  * Assertions
  */
 chai.should()
 chai.use(chaiAsPromised)
+chai.use(require('dirty-chai'))
 let expect = chai.expect
 
 /**
  * Code under test
  */
 const AuthenticationRequest = require('../src/AuthenticationRequest')
+const TestKeys = require('./keys/index')
 
 /**
  * Tests
@@ -49,6 +52,14 @@ describe('AuthenticationRequest', () => {
   })
 
   describe('create', () => {
+    before(() => {
+       sinon.stub(AuthenticationRequest, 'generateSessionKeys').resolves({})
+    })
+
+    after(() => {
+      AuthenticationRequest.generateSessionKeys.restore()
+    })
+
     it('should return a promise', () => {
       AuthenticationRequest.create(rp, options, session)
         .should.be.instanceof(Promise)
@@ -118,32 +129,35 @@ describe('AuthenticationRequest', () => {
 
     it('should persist the request to session by `state` param', () => {
       return AuthenticationRequest.create(rp, options, session).then(() => {
-        for (let key in session) {
-          key.should.include('https://forge.anvil.io/requestHistory/')
-          key.split('/').pop().length.should.equal(43)
-        }
+        let requestKey = Object.keys(session)
+          .find(k => k.startsWith('https://forge.anvil.io/requestHistory/'))
+
+        expect(requestKey).to.exist()
+        expect(requestKey.split('/').pop().length).to.equal(43)
       })
     })
 
     it('should persist the random octets for `state` to session', () => {
       return AuthenticationRequest.create(rp, options, session).then(() => {
-        for (let key in session) {
-          let octets = JSON.parse(session[key]).state
-          octets.forEach(octet => {
-            expect(Number.isInteger(octet)).to.equal(true)
-          })
-        }
+        let requestKey = Object.keys(session)
+          .find(k => k.startsWith('https://forge.anvil.io/requestHistory/'))
+
+        let octets = JSON.parse(session[requestKey]).state
+        octets.forEach(octet => {
+          expect(Number.isInteger(octet)).to.equal(true)
+        })
       })
     })
 
     it('should persist the random octets for `nonce` to session', () => {
       return AuthenticationRequest.create(rp, options, session).then(() => {
-        for (let key in session) {
-          let octets = JSON.parse(session[key]).nonce
-          octets.forEach(octet => {
-            expect(Number.isInteger(octet)).to.equal(true)
-          })
-        }
+        let requestKey = Object.keys(session)
+          .find(k => k.startsWith('https://forge.anvil.io/requestHistory/'))
+
+        let octets = JSON.parse(session[requestKey]).nonce
+        octets.forEach(octet => {
+          expect(Number.isInteger(octet)).to.equal(true)
+        })
       })
     })
 
@@ -195,5 +209,74 @@ describe('AuthenticationRequest', () => {
 
     it('should optionally encode parameters as JWT')
   })
-})
 
+  describe('generateSessionKeys', () => {
+    let sessionKeys
+
+    before(() => {
+      return AuthenticationRequest.generateSessionKeys()
+        .then(keys => sessionKeys = keys)
+    })
+
+    it('generates a private signing key', () => {
+      let privateJwk = sessionKeys.private
+
+      expect(privateJwk.alg).to.equal('RS256')
+      expect(privateJwk.key_ops).to.eql([ 'sign' ])
+    })
+
+    it('generates a public verification key', () => {
+      let publicJwk = sessionKeys.public
+
+      expect(publicJwk.alg).to.equal('RS256')
+      expect(publicJwk.key_ops).to.eql([ 'verify' ])
+    })
+  })
+
+  describe('storeSessionKeys', () => {
+    let sessionKeys, params, session
+
+    before(() => {
+      params = {}
+      session = {}
+      sessionKeys = TestKeys.sampleSessionKeys
+
+      AuthenticationRequest.storeSessionKeys(sessionKeys, params, session)
+    })
+
+    it('stores the public session key in params', () => {
+      expect(params.key).to.equal(sessionKeys.public)
+    })
+
+    it('stores the serialized private key in session storage', () => {
+      let key = 'oidc.session.privateKey'
+      expect(session[key]).to.equal(TestKeys.serializedPrivateKey)
+    })
+  })
+
+  describe('encodeRequestParams', () => {
+    it('should encode all non-OAuth2 required params inside the request jwt', () => {
+      const params = {
+        client_id: 'client123',
+        state: 'abcd',
+        nonce: '1234',
+        redirect_uri: 'https://example.com/callback',
+        scope: 'openid profile',
+        key: { alg: 'RS256', key_ops: ['verify'] },
+        response_type: 'id_token token',
+        display: 'popup'
+      }
+
+      return AuthenticationRequest.encodeRequestParams(params)
+        .then(result => {
+          expect(result).to.eql({
+            scope: 'openid profile',
+            client_id: 'client123',
+            response_type: 'id_token token',
+            request: 'eyJhbGciOiJub25lIn0.eyJub25jZSI6IjEyMzQiLCJyZWRpcmVjdF91cmkiOiJodHRwczovL2V4YW1wbGUuY29tL2NhbGxiYWNrIiwia2V5Ijp7ImFsZyI6IlJTMjU2Iiwia2V5X29wcyI6WyJ2ZXJpZnkiXX0sImRpc3BsYXkiOiJwb3B1cCJ9.',
+            state:'abcd'
+          })
+        })
+    })
+  })
+})

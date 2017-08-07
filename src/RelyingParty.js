@@ -11,6 +11,7 @@ const AuthenticationRequest = require('./AuthenticationRequest')
 const AuthenticationResponse = require('./AuthenticationResponse')
 const RelyingPartySchema = require('./RelyingPartySchema')
 const onHttpError = require('./onHttpError')
+const {JWK} = require('@trust/jose')
 
 /**
  * RelyingParty
@@ -294,6 +295,8 @@ class RelyingParty extends JSONDocument {
       return Promise.reject(error)
     }
 
+    this.clearSession()
+
     let uri = configuration.end_session_endpoint
     let method = 'get'
 
@@ -314,6 +317,46 @@ class RelyingParty extends JSONDocument {
      * @see https://openid.net/specs/openid-connect-frontchannel-1_0.html#RPLogout
      */
   }
+
+  clearSession () {
+    let session = this.store
+
+    if (!session) { return }
+
+    delete session[SESSION_PRIVATE_KEY]
+  }
+
+  /**
+   * @param uri {string} Target Resource Server URI
+   * @param idToken {IDToken} ID Token to be embedded in the PoP token
+   *
+   * @returns {Promise<PoPToken>}
+   */
+  popTokenFor (uri, idToken) {
+    return PoPToken.issueFor(uri, idToken, this)
+  }
+
+  sessionPrivateKey () {
+    if (this.sessionKey) {
+      return Promise.resolve(this.sessionKey)
+    }
+
+    return Promise.resolve()
+      .then(() => {
+        let jwk = JSON.parse(this.store[SESSION_PRIVATE_KEY])
+
+        return JWK.importKey(jwk)
+          .then(importedKey => {
+            this.sessionKey = importedKey
+
+            return importedKey
+          })
+      })
+  }
 }
+
+const SESSION_PRIVATE_KEY = 'oidc.session.privateKey'
+
+RelyingParty.SESSION_PRIVATE_KEY = SESSION_PRIVATE_KEY
 
 module.exports = RelyingParty

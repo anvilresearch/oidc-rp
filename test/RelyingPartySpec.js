@@ -269,7 +269,7 @@ describe('RelyingParty', () => {
         url: providerUrl,
         configuration: rpProviderConfig
       }
-      let rp = new RelyingParty({ provider })
+      let rp = new RelyingParty({ provider, store: {} })
 
       return rp.logout()
         .then(() => {
@@ -319,7 +319,8 @@ describe('RelyingParty', () => {
       let options = {
         provider: {
           configuration: { issuer: providerUrl }
-        }
+        },
+        store: {}
       }
       let rp = new RelyingParty(options)
 
