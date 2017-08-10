@@ -9,6 +9,7 @@ const fetch = require('node-fetch')
 const Headers = fetch.Headers ? fetch.Headers : global.Headers
 const FormUrlEncoded = require('./FormUrlEncoded')
 const IDToken = require('./IDToken')
+const Session = require('./Session')
 const onHttpError = require('./onHttpError')
 
 /**
@@ -35,11 +36,7 @@ class AuthenticationResponse {
       .then(this.validateResponseParams)
       .then(this.exchangeAuthorizationCode)
       .then(this.validateIDToken)
-      .then(() => {
-        // what kind of response object?
-        // instance of AuthenticationRequest?
-        return response
-      })
+      .then(Session.fromAuthResponse)
   }
 
   /**
