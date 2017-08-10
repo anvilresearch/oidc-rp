@@ -1,27 +1,38 @@
 'use strict'
 
-const {JWT} = require('@trust/jose')
+const {JWT, JWK} = require('@trust/jose')
 
 const DEFAULT_MAX_AGE = 3600  // Default token expiration, in seconds
 
 class PoPToken extends JWT {
   /**
    * @param resourceServerUri {string} RS URI for which this token is intended
-   * @param idToken {string} JWT compact encoded ID Token, to embed in pop token
-   * @param rp {RelyingParty}
+   *
+   * @param session {Session}
+   * @param session.clientId {string}
+   * @param session.idToken {string}
+   * @param session.sessionKey {string}
    *
    * @returns {Promise<string>} PoPToken, encoded as compact JWT
    */
-  static issueFor (resourceServerUri, idToken, rp) {
-    const clientId = rp.registration['client_id']
+  static issueFor (resourceServerUri, session) {
+    if (!session.sessionKey) {
+      throw new Error('Cannot issue PoPToken - missing session key')
+    }
 
-    return rp.sessionPrivateKey()
-      .then(jwk => {
+    if (!session.idToken) {
+      throw new Error('Cannot issue PoPToken - missing id token')
+    }
+
+    let jwk = JSON.parse(session.sessionKey)
+
+    return JWK.importKey(jwk)
+      .then(importedSessionJwk => {
         let options = {
-          key: jwk,
           aud: resourceServerUri,
-          iss: clientId,
-          id_token: idToken
+          key: importedSessionJwk,
+          iss: session.clientId,
+          id_token: session.idToken
         }
 
         return PoPToken.issue(options)
