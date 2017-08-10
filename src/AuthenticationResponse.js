@@ -290,15 +290,10 @@ class AuthenticationResponse {
    * @returns {Promise}
    */
   static validateIDToken (response) {
-    let jwt = response.params.id_token
-
     // only validate the ID Token if present in the response
-    if (!jwt) {
+    if (!response.params.id_token) {
       return Promise.resolve(response)
     }
-
-    let {provider, registration} = response.rp
-    let {configuration, jwks} = provider
 
     return Promise.resolve(response)
       .then(AuthenticationResponse.decryptIDToken)
@@ -309,10 +304,10 @@ class AuthenticationResponse {
       .then(AuthenticationResponse.verifySignature)
       .then(AuthenticationResponse.validateExpires)
       .then(AuthenticationResponse.verifyNonce)
-      .then(AuthenticationResponse.validateACR)
+      .then(AuthenticationResponse.validateAcr)
       .then(AuthenticationResponse.validateAuthTime)
       .then(AuthenticationResponse.validateAccessTokenHash)
-      .then(AuthenticationResponse.validateCodeHash)
+      .then(AuthenticationResponse.validateAuthorizationCodeHash)
   }
 
   /**
@@ -489,9 +484,20 @@ class AuthenticationResponse {
    * validateAcr
    *
    * @param {Object} response
-   * @returns {Promise}
+   * @returns {Object}
    */
   static validateAcr (response) {
+    // TODO
+    return response
+  }
+
+  /**
+   * validateAuthTime
+   *
+   * @param {Object} response
+   * @returns {Promise}
+   */
+  static validateAuthTime (response) {
     // TODO
     return response
   }
