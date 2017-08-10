@@ -11,7 +11,6 @@ const AuthenticationRequest = require('./AuthenticationRequest')
 const AuthenticationResponse = require('./AuthenticationResponse')
 const RelyingPartySchema = require('./RelyingPartySchema')
 const onHttpError = require('./onHttpError')
-const {JWK} = require('@trust/jose')
 
 /**
  * RelyingParty
@@ -334,24 +333,6 @@ class RelyingParty extends JSONDocument {
    */
   popTokenFor (uri, idToken) {
     return PoPToken.issueFor(uri, idToken, this)
-  }
-
-  sessionPrivateKey () {
-    if (this.sessionKey) {
-      return Promise.resolve(this.sessionKey)
-    }
-
-    return Promise.resolve()
-      .then(() => {
-        let jwk = JSON.parse(this.store[SESSION_PRIVATE_KEY])
-
-        return JWK.importKey(jwk)
-          .then(importedKey => {
-            this.sessionKey = importedKey
-
-            return importedKey
-          })
-      })
   }
 }
 
