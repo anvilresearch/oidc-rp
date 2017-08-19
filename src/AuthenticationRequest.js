@@ -150,8 +150,8 @@ class AuthenticationRequest {
 
   static storeSessionKeys (sessionKeys, params, session) {
     // store the private one in session, public one goes into params
-    session['oidc.session.privateKey'] = JSON.stringify(sessionKeys.private)
-    params.key = sessionKeys.public
+    session.setItem('oidc.session.privateKey', JSON.stringify(sessionKeys.private))
+      .then(() => { params.key = sessionKeys.public })
   }
 
   static encodeRequestParams (params) {

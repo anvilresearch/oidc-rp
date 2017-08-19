@@ -20,6 +20,7 @@ let expect = chai.expect
  */
 const AuthenticationRequest = require('../src/AuthenticationRequest')
 const TestKeys = require('./keys/index')
+const AsyncStorage = require('../src/AsyncStorage')
 
 /**
  * Tests
@@ -48,7 +49,7 @@ describe('AuthenticationRequest', () => {
     }
 
     options = {}
-    session = {}
+    session = new AsyncStorage()
   })
 
   describe('create', () => {
@@ -238,10 +239,10 @@ describe('AuthenticationRequest', () => {
 
     before(() => {
       params = {}
-      session = {}
+      session = new AsyncStorage()
       sessionKeys = TestKeys.sampleSessionKeys
 
-      AuthenticationRequest.storeSessionKeys(sessionKeys, params, session)
+      return AuthenticationRequest.storeSessionKeys(sessionKeys, params, session)
     })
 
     it('stores the public session key in params', () => {
@@ -250,7 +251,10 @@ describe('AuthenticationRequest', () => {
 
     it('stores the serialized private key in session storage', () => {
       let key = 'oidc.session.privateKey'
-      expect(session[key]).to.equal(TestKeys.serializedPrivateKey)
+      return session.getItem(key)
+        .then((val) => {
+          expect(val).to.equal(TestKeys.serializedPrivateKey)
+        })
     })
   })
 
