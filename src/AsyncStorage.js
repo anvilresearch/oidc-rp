@@ -1,7 +1,10 @@
+const asyncStoreFromData = (data) => new AsyncStorage(new MemStorage(data))
+
+
 /**
  * Shims a Web Storage interface to an async interface (https://developer.mozilla.org/en-US/docs/Web/API/Storage)
  */
-module.exports = class AsyncStorage {
+class AsyncStorage {
   constructor (syncStorage) {
     this.store = syncStorage || new MemStorage()
   }
@@ -32,8 +35,8 @@ module.exports = class AsyncStorage {
 }
 
 class MemStorage {
-  constructor () {
-    this.store = {}
+  constructor (store) {
+    this.store = store || {}
   }
 
   get length () {
@@ -45,18 +48,23 @@ class MemStorage {
   }
 
   getItem (key) {
-    return this.store.key
+    return this.store[key]
   }
 
   setItem (key, val) {
-    this.store.key = val
+    this.store[key] = val
   }
 
   removeItem (key) {
-    delete this.store.key
+    delete this.store[key]
   }
 
   clear () {
     this.store = {}
   }
+}
+
+module.exports = {
+  AsyncStorage,
+  asyncStoreFromData
 }

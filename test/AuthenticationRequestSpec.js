@@ -20,7 +20,7 @@ let expect = chai.expect
  */
 const AuthenticationRequest = require('../src/AuthenticationRequest')
 const TestKeys = require('./keys/index')
-const AsyncStorage = require('../src/AsyncStorage')
+const {AsyncStorage} = require('../src/AsyncStorage')
 
 /**
  * Tests

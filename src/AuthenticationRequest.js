@@ -23,7 +23,7 @@ class AuthenticationRequest {
    *
    * @param {RelyingParty} rp – instance of RelyingParty
    * @param {Object} options - optional request parameters
-   * @param {Object} session – reference to localStorage or other session object
+   * @param {Object} session – reference to an object implementing the AsyncStorage interface
    *
    * @returns {Promise}
    */
