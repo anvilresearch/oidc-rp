@@ -91,11 +91,12 @@ class AuthenticationRequest {
 
         // store the request params for response validation
         // with serialized octet values for state and nonce
-        session[key] = JSON.stringify(params)
-
-        // replace state and nonce octets with base64url encoded digests
-        params.state = state
-        params.nonce = nonce
+        return session.setItem(key, JSON.stringify(params))
+          .then(() => {
+            // replace state and nonce octets with base64url encoded digests
+            params.state = state
+            params.nonce = nonce
+          })
       })
 
       .then(() => AuthenticationRequest.generateSessionKeys())

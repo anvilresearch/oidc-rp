@@ -130,7 +130,7 @@ describe('AuthenticationRequest', () => {
 
     it('should persist the request to session by `state` param', () => {
       return AuthenticationRequest.create(rp, options, session).then(() => {
-        let requestKey = Object.keys(session)
+        let requestKey = Object.keys(session.store.store)
           .find(k => k.startsWith('https://forge.anvil.io/requestHistory/'))
 
         expect(requestKey).to.exist()
@@ -140,10 +140,11 @@ describe('AuthenticationRequest', () => {
 
     it('should persist the random octets for `state` to session', () => {
       return AuthenticationRequest.create(rp, options, session).then(() => {
-        let requestKey = Object.keys(session)
+        let requestKey = Object.keys(session.store.store)
           .find(k => k.startsWith('https://forge.anvil.io/requestHistory/'))
-
-        let octets = JSON.parse(session[requestKey]).state
+        return session.getItem(requestKey)
+      }).then((serializedOctets) => {
+        let octets = JSON.parse(serializedOctets).state
         octets.forEach(octet => {
           expect(Number.isInteger(octet)).to.equal(true)
         })
@@ -152,10 +153,11 @@ describe('AuthenticationRequest', () => {
 
     it('should persist the random octets for `nonce` to session', () => {
       return AuthenticationRequest.create(rp, options, session).then(() => {
-        let requestKey = Object.keys(session)
+        let requestKey = Object.keys(session.store.store)
           .find(k => k.startsWith('https://forge.anvil.io/requestHistory/'))
-
-        let octets = JSON.parse(session[requestKey]).nonce
+        return session.getItem(requestKey)
+      }).then((serializedOctets) => {
+        let octets = JSON.parse(serializedOctets).nonce
         octets.forEach(octet => {
           expect(Number.isInteger(octet)).to.equal(true)
         })
