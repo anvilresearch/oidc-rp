@@ -1,5 +1,6 @@
 'use strict'
 
+const { URL } = require('whatwg-url')
 const {JWT, JWK} = require('@trust/jose')
 
 const DEFAULT_MAX_AGE = 3600  // Default token expiration, in seconds
@@ -16,6 +17,10 @@ class PoPToken extends JWT {
    * @returns {Promise<string>} PoPToken, encoded as compact JWT
    */
   static issueFor (resourceServerUri, session) {
+    if (!resourceServerUri) {
+      throw new Error('Cannot issue PoPToken - missing resource server URI')
+    }
+
     if (!session.sessionKey) {
       throw new Error('Cannot issue PoPToken - missing session key')
     }
@@ -29,7 +34,7 @@ class PoPToken extends JWT {
     return JWK.importKey(jwk)
       .then(importedSessionJwk => {
         let options = {
-          aud: resourceServerUri,
+          aud: (new URL(resourceServerUri)).origin,
           key: importedSessionJwk,
           iss: session.clientId,
           id_token: session.idToken
