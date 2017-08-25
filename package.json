@@ -38,13 +38,13 @@
   },
   "homepage": "https://github.com/anvilresearch/oidc-rp#readme",
   "dependencies": {
-    "base64url": "^2.0.0",
     "@trust/jose": "^0.1.7",
     "@trust/json-document": "^0.1.4",
+    "@trust/webcrypto": "0.4.0",
+    "base64url": "^2.0.0",
     "node-fetch": "^1.7.2",
     "text-encoding": "^0.6.4",
-    "urlutils": "0.0.3",
-    "@trust/webcrypto": "0.4.0"
+    "whatwg-url": "^6.1.0"
   },
   "devDependencies": {
     "babel-cli": "^6.26.0",
