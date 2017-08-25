@@ -3,7 +3,7 @@
  */
 const assert = require('assert')
 const fetch = require('node-fetch')
-const URL = require('urlutils')
+const { URL } = require('whatwg-url')
 const Headers = fetch.Headers ? fetch.Headers : global.Headers
 const {JSONDocument} = require('@trust/json-document')
 const {JWKSet} = require('@trust/jose')

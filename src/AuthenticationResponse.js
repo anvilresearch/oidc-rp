@@ -1,7 +1,7 @@
 /**
  * Dependencies
  */
-const URL = require('urlutils')
+const { URL } = require('whatwg-url')
 const assert = require('assert')
 const crypto = require('@trust/webcrypto')
 const base64url = require('base64url')

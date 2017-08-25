@@ -6,7 +6,7 @@ const base64url = require('base64url')
 const crypto = require('@trust/webcrypto')
 const { JWT } = require('@trust/jose')
 const FormUrlEncoded = require('./FormUrlEncoded')
-const URL = require('urlutils')
+const { URL } = require('whatwg-url')
 
 /**
  * Authentication Request
@@ -135,7 +135,7 @@ class AuthenticationRequest {
       ["sign", "verify"]
     )
       .then((keyPair) => {
-        //returns a keypair object
+        // returns a keypair object
         return Promise.all([
           crypto.subtle.exportKey('jwk', keyPair.publicKey),
           crypto.subtle.exportKey('jwk', keyPair.privateKey)

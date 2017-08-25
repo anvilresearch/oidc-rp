@@ -31,15 +31,17 @@ const params = {
 }
 
 const rp = {
-  store: {},
   registration: {
     client_id: 'client123'
   }
 }
 const sessionKey = 'session key'
-rp.store[RelyingParty.SESSION_PRIVATE_KEY] = sessionKey
 
-const response = { decoded, params, rp }
+const session = {}
+
+session[RelyingParty.SESSION_PRIVATE_KEY] = sessionKey
+
+const response = { decoded, params, rp, session }
 
 describe('Session', () => {
   describe('fromAuthResponse', () => {

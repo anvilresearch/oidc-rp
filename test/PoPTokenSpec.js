@@ -48,6 +48,7 @@ describe('PoPToken', () => {
 
   describe('issueFor', () => {
     it('should issue a PoP token for an RS', () => {
+      let resourceServerUri = 'https://rs.example.net/some/path'
       return PoPToken.issueFor(resourceServerUri, session)
         .then(token => JWT.decode(token))
         .then(popJwt => {
@@ -55,7 +56,7 @@ describe('PoPToken', () => {
           expect(header).to.eql({ alg: 'RS256' })
 
           expect(payload.iss).to.equal(clientId)
-          expect(payload.aud).to.equal(resourceServerUri)
+          expect(payload.aud).to.equal('https://rs.example.net')
           expect(payload.token_type).to.equal('pop')
 
           expect(payload.exp).to.exist()
