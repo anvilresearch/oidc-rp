@@ -38,7 +38,7 @@ class Session {
 
     const payload = response.decoded.payload
     const registration = response.rp.registration
-    const sessionKey = response.rp.store[RelyingParty.SESSION_PRIVATE_KEY]
+    const sessionKey = response.session[RelyingParty.SESSION_PRIVATE_KEY]
 
     let options = {
       sessionKey,

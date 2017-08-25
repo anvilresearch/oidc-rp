@@ -135,7 +135,7 @@ class AuthenticationRequest {
       ["sign", "verify"]
     )
       .then((keyPair) => {
-        //returns a keypair object
+        // returns a keypair object
         return Promise.all([
           crypto.subtle.exportKey('jwk', keyPair.publicKey),
           crypto.subtle.exportKey('jwk', keyPair.privateKey)
