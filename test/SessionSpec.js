@@ -15,6 +15,7 @@ let expect = chai.expect
 /**
  * Code under test
  */
+const { asyncStoreFromData } = require('../src/AsyncStorage')
 const Session = require('../src/Session')
 const RelyingParty = require('../src/RelyingParty')
 
@@ -37,18 +38,18 @@ const rp = {
 }
 const sessionKey = 'session key'
 
-const session = {}
-
-session[RelyingParty.SESSION_PRIVATE_KEY] = sessionKey
-
-const response = { decoded, params, rp, session }
-
 describe('Session', () => {
   describe('fromAuthResponse', () => {
     let session
 
     before(() => {
-      session = Session.fromAuthResponse(response)
+      let _session = asyncStoreFromData({
+        [RelyingParty.SESSION_PRIVATE_KEY]: sessionKey
+      })
+      const response = { decoded, params, rp, session: _session }
+      return Session.fromAuthResponse(response).then(s => {
+        session = s
+      })
     })
 
     it('should init the issuer', () => {

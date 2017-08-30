@@ -38,18 +38,17 @@ class Session {
 
     const payload = response.decoded.payload
     const registration = response.rp.registration
-    const sessionKey = response.session[RelyingParty.SESSION_PRIVATE_KEY]
 
-    let options = {
-      sessionKey,
-      idp: payload.iss,
-      clientId: registration['client_id'],
-      decoded: response.decoded,
-      accessToken: response.params['access_token'],
-      idToken: response.params['id_token']
-    }
-
-    return new Session(options)
+    return response.session.getItem(RelyingParty.SESSION_PRIVATE_KEY).then(sessionKey =>
+      new Session({
+        sessionKey,
+        idp: payload.iss,
+        clientId: registration['client_id'],
+        decoded: response.decoded,
+        accessToken: response.params['access_token'],
+        idToken: response.params['id_token']
+      })
+    )
   }
 }
 
