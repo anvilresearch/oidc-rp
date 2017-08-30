@@ -23,7 +23,7 @@ class AuthenticationRequest {
    *
    * @param {RelyingParty} rp – instance of RelyingParty
    * @param {Object} options - optional request parameters
-   * @param {Object} session – reference to localStorage or other session object
+   * @param {Object} session – reference to an object implementing the AsyncStorage interface
    *
    * @returns {Promise}
    */
@@ -91,11 +91,12 @@ class AuthenticationRequest {
 
         // store the request params for response validation
         // with serialized octet values for state and nonce
-        session[key] = JSON.stringify(params)
-
-        // replace state and nonce octets with base64url encoded digests
-        params.state = state
-        params.nonce = nonce
+        return session.setItem(key, JSON.stringify(params))
+          .then(() => {
+            // replace state and nonce octets with base64url encoded digests
+            params.state = state
+            params.nonce = nonce
+          })
       })
 
       .then(() => AuthenticationRequest.generateSessionKeys())
@@ -150,8 +151,8 @@ class AuthenticationRequest {
 
   static storeSessionKeys (sessionKeys, params, session) {
     // store the private one in session, public one goes into params
-    session['oidc.session.privateKey'] = JSON.stringify(sessionKeys.private)
-    params.key = sessionKeys.public
+    session.setItem('oidc.session.privateKey', JSON.stringify(sessionKeys.private))
+      .then(() => { params.key = sessionKeys.public })
   }
 
   static encodeRequestParams (params) {

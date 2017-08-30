@@ -44,7 +44,7 @@ const onHttpError = require('./onHttpError')
  *    registration: {
  *      // if you have it saved somewhere
  *    },
- *    store: localStorage || req.session,
+ *    store: AsyncStorage,
  *    popup: { width: 400, height: 300 }
  *  })
  *
@@ -104,7 +104,7 @@ class RelyingParty extends JSONDocument {
    * @param registration {Object} Client dynamic registration options
    * @param options {Object}
    * @param options.defaults
-   * @param [options.store] {Session|Storage}
+   * @param [options.store] {AsyncStorage}
    * @returns {Promise<RelyingParty>} RelyingParty instance, registered.
    */
   static register (issuer, registration, options) {
@@ -258,20 +258,17 @@ class RelyingParty extends JSONDocument {
       assert(configuration, 'OpenID Configuration is not initialized.')
       assert(configuration.userinfo_endpoint, 'OpenID Configuration is missing userinfo_endpoint.')
 
-      let uri = configuration.userinfo_endpoint
-      let access_token = this.store.access_token
-
-      assert(access_token, 'Missing access token.')
-
-      let headers = new Headers({
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${access_token}`
-      })
-
-      return fetch(uri, {headers})
+      return this.store.getItem('access_token')
+        .then((access_token) => {
+          assert(access_token, 'Missing access token.')
+          let headers = new Headers({
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${access_token}`
+          })
+          return fetch(configuration.userinfo_endpoint, {headers})
+        })
         .then(onHttpError('Error fetching userinfo'))
         .then(response => response.json())
-
     } catch (error) {
       return Promise.reject(error)
     }
@@ -294,13 +291,12 @@ class RelyingParty extends JSONDocument {
       return Promise.reject(error)
     }
 
-    this.clearSession()
-
-    let uri = configuration.end_session_endpoint
-    let method = 'get'
-
-    return fetch(uri, {method})
+    return this.clearSession()
+      .then(() =>
+        fetch(configuration.end_session_endpoint, {method: 'get'})
+      )
       .then(onHttpError('Error logging out'))
+
 
     // TODO: Validate `frontchannel_logout_uri` if necessary
     /**
@@ -322,7 +318,7 @@ class RelyingParty extends JSONDocument {
 
     if (!session) { return }
 
-    delete session[SESSION_PRIVATE_KEY]
+    return session.removeItem(SESSION_PRIVATE_KEY)
   }
 
   /**

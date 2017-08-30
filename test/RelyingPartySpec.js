@@ -23,6 +23,7 @@ const RelyingParty = require('../src/RelyingParty')
 const RelyingPartySchema = require('../src/RelyingPartySchema')
 const AuthenticationRequest = require('../src/AuthenticationRequest')
 const AuthenticationResponse = require('../src/AuthenticationResponse')
+const {AsyncStorage, asyncStoreFromData} = require('../src/AsyncStorage')
 
 /**
  * Tests
@@ -269,7 +270,7 @@ describe('RelyingParty', () => {
         url: providerUrl,
         configuration: rpProviderConfig
       }
-      let rp = new RelyingParty({ provider, store: {} })
+      let rp = new RelyingParty({ provider, store: new AsyncStorage() })
 
       return rp.logout()
         .then(() => {
@@ -288,7 +289,7 @@ describe('RelyingParty', () => {
           end_session_endpoint: 'https://notfound/logout'
         }
       }
-      let rp = new RelyingParty({ provider })
+      let rp = new RelyingParty({ provider, store: new AsyncStorage() })
 
       rp.logout()
         .catch(err => {
@@ -320,7 +321,7 @@ describe('RelyingParty', () => {
         provider: {
           configuration: { issuer: providerUrl }
         },
-        store: {}
+        store: new AsyncStorage()
       }
       let rp = new RelyingParty(options)
 
@@ -404,7 +405,7 @@ describe('RelyingParty', () => {
     it('should reject with missing access token', () => {
       let options = {
         provider: { configuration: rpProviderConfig },
-        store: {}
+        store: new AsyncStorage()
       }
       let rp = new RelyingParty(options)
 
@@ -419,7 +420,7 @@ describe('RelyingParty', () => {
 
       let options = {
         provider: { configuration: rpProviderConfig },
-        store: { 'access_token': '1234' }
+        store: asyncStoreFromData({ 'access_token': '1234' })
       }
       let rp = new RelyingParty(options)
 
@@ -440,7 +441,7 @@ describe('RelyingParty', () => {
             'userinfo_endpoint': 'https://notfound/userinfo'
           }
         },
-        store: { 'access_token': '1234' }
+        store: asyncStoreFromData({ 'access_token': '1234' })
       }
       let rp = new RelyingParty(options)
 
@@ -456,6 +457,7 @@ describe('RelyingParty', () => {
     it('should return a JSON serialization', () => {
       let rp = new RelyingParty({})
 
+      // TODO
       expect(rp.serialize()).to.equal('{"defaults":{"authenticate":{"response_type":"id_token token","display":"page","scope":["openid"]}},"store":{}}')
     })
   })
@@ -469,7 +471,7 @@ describe('RelyingParty', () => {
       let request = {}
       sinon.stub(AuthenticationRequest, 'create').resolves(request)
 
-      let store = {}
+      let store = new AsyncStorage()
       let rp = new RelyingParty({ store })
 
       let options = {}
@@ -492,7 +494,7 @@ describe('RelyingParty', () => {
       let response = {}
       sinon.stub(AuthenticationResponse, 'validateResponse').resolves(response)
 
-      let store = {}
+      let store = new AsyncStorage()
       let rp = new RelyingParty({ store })
 
       let uri = 'https://app.example.com/callback'

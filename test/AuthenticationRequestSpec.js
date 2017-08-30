@@ -20,6 +20,7 @@ let expect = chai.expect
  */
 const AuthenticationRequest = require('../src/AuthenticationRequest')
 const TestKeys = require('./keys/index')
+const {AsyncStorage} = require('../src/AsyncStorage')
 
 /**
  * Tests
@@ -48,7 +49,7 @@ describe('AuthenticationRequest', () => {
     }
 
     options = {}
-    session = {}
+    session = new AsyncStorage()
   })
 
   describe('create', () => {
@@ -129,7 +130,7 @@ describe('AuthenticationRequest', () => {
 
     it('should persist the request to session by `state` param', () => {
       return AuthenticationRequest.create(rp, options, session).then(() => {
-        let requestKey = Object.keys(session)
+        let requestKey = Object.keys(session.store.store)
           .find(k => k.startsWith('https://forge.anvil.io/requestHistory/'))
 
         expect(requestKey).to.exist()
@@ -139,10 +140,11 @@ describe('AuthenticationRequest', () => {
 
     it('should persist the random octets for `state` to session', () => {
       return AuthenticationRequest.create(rp, options, session).then(() => {
-        let requestKey = Object.keys(session)
+        let requestKey = Object.keys(session.store.store)
           .find(k => k.startsWith('https://forge.anvil.io/requestHistory/'))
-
-        let octets = JSON.parse(session[requestKey]).state
+        return session.getItem(requestKey)
+      }).then((serializedOctets) => {
+        let octets = JSON.parse(serializedOctets).state
         octets.forEach(octet => {
           expect(Number.isInteger(octet)).to.equal(true)
         })
@@ -151,10 +153,11 @@ describe('AuthenticationRequest', () => {
 
     it('should persist the random octets for `nonce` to session', () => {
       return AuthenticationRequest.create(rp, options, session).then(() => {
-        let requestKey = Object.keys(session)
+        let requestKey = Object.keys(session.store.store)
           .find(k => k.startsWith('https://forge.anvil.io/requestHistory/'))
-
-        let octets = JSON.parse(session[requestKey]).nonce
+        return session.getItem(requestKey)
+      }).then((serializedOctets) => {
+        let octets = JSON.parse(serializedOctets).nonce
         octets.forEach(octet => {
           expect(Number.isInteger(octet)).to.equal(true)
         })
@@ -238,10 +241,10 @@ describe('AuthenticationRequest', () => {
 
     before(() => {
       params = {}
-      session = {}
+      session = new AsyncStorage()
       sessionKeys = TestKeys.sampleSessionKeys
 
-      AuthenticationRequest.storeSessionKeys(sessionKeys, params, session)
+      return AuthenticationRequest.storeSessionKeys(sessionKeys, params, session)
     })
 
     it('stores the public session key in params', () => {
@@ -250,7 +253,10 @@ describe('AuthenticationRequest', () => {
 
     it('stores the serialized private key in session storage', () => {
       let key = 'oidc.session.privateKey'
-      expect(session[key]).to.equal(TestKeys.serializedPrivateKey)
+      return session.getItem(key)
+        .then((val) => {
+          expect(val).to.equal(TestKeys.serializedPrivateKey)
+        })
     })
   })
 

@@ -24,6 +24,7 @@ const {JWT, JWKSet} = require('@trust/jose')
 const IDToken = require('../src/IDToken')
 const AuthenticationResponse = require('../src/AuthenticationResponse')
 const {RsaPrivateCryptoKey, RsaPublicCryptoKey} = require('./keys')
+const {asyncStoreFromData} = require('../src/AsyncStorage')
 
 /**
  * Tests
@@ -104,11 +105,11 @@ describe('AuthenticationResponse', () => {
         params: {
           state: '1234'
         },
-        session: {
+        session: asyncStoreFromData({
           'https://forge.anvil.io/requestHistory/1234': JSON.stringify({
             scope: 'openid'
           })
-        }
+        })
       }
     })
 
@@ -120,15 +121,14 @@ describe('AuthenticationResponse', () => {
     })
 
     it('should throw with mismatching state parameter', () => {
-      expect(() => {
-        response.params.state = '1235'
-        AuthenticationResponse.matchRequest(response)
-      }).to.throw('Mismatching state parameter in authentication response')
+      response.params.state = '1235'
+      return AuthenticationResponse.matchRequest(response)
+        .should.be.rejectedWith('Mismatching state parameter in authentication response')
     })
 
     it('should deserialize the matched request', () => {
-      AuthenticationResponse.matchRequest(response).request
-        .should.eql({ scope: 'openid' })
+      return AuthenticationResponse.matchRequest(response)
+        .should.eventually.have.deep.property('request', { scope: 'openid' })
     })
   })
 

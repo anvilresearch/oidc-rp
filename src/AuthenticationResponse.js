@@ -99,15 +99,15 @@ class AuthenticationResponse {
     }
 
     let key = `${issuer}/requestHistory/${state}`
-    let request = session[key]
-
-    if (!request) {
-      throw new Error(
-        'Mismatching state parameter in authentication response')
-    }
-
-    response.request = JSON.parse(request)
-    return response
+    return session.getItem(key)
+      .then((request) => {
+        if (!request) {
+          throw new Error(
+            'Mismatching state parameter in authentication response')
+        }
+        response.request = JSON.parse(request)
+        return response
+      })
   }
 
   /**
