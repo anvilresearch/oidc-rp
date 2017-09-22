@@ -4,28 +4,32 @@ class Session {
   /**
    * @param options {Object}
    *
-   * @param options.idp {string} Identity provider (issuer of ID Token)
+   * @param options.issuer {string} Identity provider (issuer of ID/Access Token)
    *
-   * @param options.clientId {string} Relying Party client_id
+   * @param options.authorization {object}
+   * @param options.authorization.client_id {string} OIDC/OAuth2 client id
+   * @param [options.authorization.id_token] {string} Compact-serialized id_token param
+   * @param [options.authorization.access_token] {string} Compact-serialized access_token param
+   * @param [options.authorization.refresh_token] {string} Compact-serialized refresh_token
    *
-   * @param options.sessionKey {string} Serialized client session key generated
+   * @param [options.sessionKey] {string} Serialized client session key generated
    *   during the Authentication Request, used to issue PoPTokens
    *
-   * @param options.decoded {IDToken} Decoded/verified ID Token JWT
+   * @param [options.idClaims] {object} Decoded/verified ID Token JWT payload
    *
-   * @param options.accessToken {string} Compact-serialized access_token param
-   *
-   * @param options.idToken {string} Compact-serialized id_token param
+   * @param [options.accessClaims] {object} Decoded/verified Access Token JWT payload
    */
   constructor (options) {
-    this.idp = options.idp
-    this.clientId = options.clientId
-    this.sessionKey = options.sessionKey
-    this.decoded = options.decoded
+    this.issuer = options.issuer
 
-    // Raw (string-encoded) tokens
-    this.accessToken = options.accessToken
-    this.idToken = options.idToken
+    this.authorization = options.authorization || {}
+
+    this.sessionKey = options.sessionKey
+
+    this.idClaims = options.idClaims
+    this.accessClaims = options.accessClaims
+
+    this.fetch = this.authenticatedFetch()
   }
 
   /**
@@ -36,20 +40,27 @@ class Session {
   static fromAuthResponse (response) {
     const RelyingParty = require('./RelyingParty')  // import here due to circular dep
 
-    const payload = response.decoded.payload
-    const registration = response.rp.registration
-    const sessionKey = response.session[RelyingParty.SESSION_PRIVATE_KEY]
+    let payload = response.decoded.payload
+    let registration = response.rp.registration
+    let sessionKey = response.session[RelyingParty.SESSION_PRIVATE_KEY]
 
     let options = {
       sessionKey,
-      idp: payload.iss,
-      clientId: registration['client_id'],
-      decoded: response.decoded,
-      accessToken: response.params['access_token'],
-      idToken: response.params['id_token']
+      issuer: payload.iss,
+      authorization: {
+        client_id: registration['client_id'],
+        access_token: response.params['access_token'],
+        id_token: response.params['id_token'],
+        refresh_token: response.params['refresh_token']
+      },
+      idClaims: response.decoded && response.decoded.payload,
     }
 
     return new Session(options)
+  }
+
+  authenticatedFetch () {
+    return require('node-fetch')
   }
 }
 

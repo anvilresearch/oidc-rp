@@ -10,9 +10,9 @@ class PoPToken extends JWT {
    * @param resourceServerUri {string} RS URI for which this token is intended
    *
    * @param session {Session}
-   * @param session.clientId {string}
-   * @param session.idToken {string}
    * @param session.sessionKey {string}
+   * @param session.authorization.client_id {string}
+   * @param session.authorization.id_token {string}
    *
    * @returns {Promise<string>} PoPToken, encoded as compact JWT
    */
@@ -25,7 +25,7 @@ class PoPToken extends JWT {
       throw new Error('Cannot issue PoPToken - missing session key')
     }
 
-    if (!session.idToken) {
+    if (!session.authorization.id_token) {
       throw new Error('Cannot issue PoPToken - missing id token')
     }
 
@@ -36,8 +36,8 @@ class PoPToken extends JWT {
         let options = {
           aud: (new URL(resourceServerUri)).origin,
           key: importedSessionJwk,
-          iss: session.clientId,
-          id_token: session.idToken
+          iss: session.authorization.client_id,
+          id_token: session.authorization.id_token
         }
 
         return PoPToken.issue(options)
