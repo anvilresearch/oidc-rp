@@ -36,8 +36,6 @@ class Session {
 
     this.idClaims = options.idClaims
     this.accessClaims = options.accessClaims
-
-    this.fetch = this.authenticatedFetch()
   }
 
   static from (options) {
@@ -75,11 +73,11 @@ class Session {
   }
 
   /**
-   * authenticatedFetch
+   * Authenticated fetch() getter
    *
    * @returns {function}
    */
-  authenticatedFetch () {
+  get fetch () {
     /**
      * fetch() function signature
      *
