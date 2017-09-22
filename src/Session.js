@@ -1,8 +1,14 @@
 'use strict'
 
+const fetch = require('node-fetch')
+const onHttpError = require('./onHttpError')
+const PoPToken = require('./PoPToken')
+
 class Session {
   /**
    * @param options {Object}
+   *
+   * @param options.credentialType {string} 'access_token' or 'pop_token'
    *
    * @param options.issuer {string} Identity provider (issuer of ID/Access Token)
    *
@@ -20,6 +26,8 @@ class Session {
    * @param [options.accessClaims] {object} Decoded/verified Access Token JWT payload
    */
   constructor (options) {
+    this.credentialType = options.credentialType || 'access_token'
+
     this.issuer = options.issuer
 
     this.authorization = options.authorization || {}
@@ -46,11 +54,14 @@ class Session {
 
     let payload = response.decoded.payload
     let registration = response.rp.registration
+    let rpAuthOptions = response.rp.authenticate || {}
+
     let sessionKey = response.session[RelyingParty.SESSION_PRIVATE_KEY]
 
     let options = {
       sessionKey,
       issuer: payload.iss,
+      credentialType: rpAuthOptions['credential_type'],
       authorization: {
         client_id: registration['client_id'],
         access_token: response.params['access_token'],
@@ -63,8 +74,88 @@ class Session {
     return Session.from(options)
   }
 
+  /**
+   * authenticatedFetch
+   *
+   * @returns {function}
+   */
   authenticatedFetch () {
-    return require('node-fetch')
+    /**
+     * fetch() function signature
+     *
+     * @param url {RequestInfo|string}
+     * @param options {object}
+     *
+     * @returns {Promise<Response>}
+     */
+    return (url, options) => {
+      return fetch(url, options)
+
+        .then(response => {
+          if (response.status === 401 && this.hasCredentials()) {
+            // Retry with credentials
+            return this.fetchWithCredentials(url, options)
+          }
+
+          if (!response.ok) {
+            onHttpError()(response)  // throw error
+          }
+
+          return response
+        })
+    }
+  }
+
+  /**
+   * bearerTokenFor
+   *
+   * @param url {string}
+   *
+   * @returns {Promise<string>}
+   */
+  bearerTokenFor (url) {
+    switch (this.credentialType) {
+      case 'pop_token':
+        return PoPToken.issueFor(url, this)
+
+      default:  // 'access_token' etc
+        return Promise.resolve(this.authorization[this.credentialType])
+    }
+  }
+
+  /**
+   * hasCredentials
+   *
+   * @returns {boolean}
+   */
+  hasCredentials () {
+    switch (this.credentialType) {
+      case 'pop_token':
+        return !!this.authorization['id_token']
+
+      default:  // 'access_token' etc
+        return !!this.authorization[this.credentialType]
+    }
+  }
+
+  /**
+   * fetchWithCredentials
+   *
+   * @param url {RequestInfo|string}
+   * @param options {object}
+   *
+   * @returns {Promise<Response>}
+   */
+  fetchWithCredentials (url, options) {
+    options.headers = options.headers || {}
+
+    return this.bearerTokenFor(url)
+
+      .then(token => {
+        options.headers.authorization = `Bearer ${token}`
+
+        return fetch(url, options)
+      })
   }
 
   toJSON () {
