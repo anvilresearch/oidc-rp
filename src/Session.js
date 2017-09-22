@@ -32,6 +32,10 @@ class Session {
     this.fetch = this.authenticatedFetch()
   }
 
+  static from (options) {
+    return new Session(options)
+  }
+
   /**
    * @param response {AuthenticationResponse}
    *
@@ -56,11 +60,15 @@ class Session {
       idClaims: response.decoded && response.decoded.payload,
     }
 
-    return new Session(options)
+    return Session.from(options)
   }
 
   authenticatedFetch () {
     return require('node-fetch')
+  }
+
+  toJSON () {
+    return JSON.stringify(this)
   }
 }
 
