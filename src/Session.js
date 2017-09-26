@@ -155,10 +155,6 @@ class Session {
         return fetch(url, options)
       })
   }
-
-  toJSON () {
-    return JSON.stringify(this)
-  }
 }
 
 module.exports = Session
