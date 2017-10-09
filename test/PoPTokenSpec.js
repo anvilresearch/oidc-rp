@@ -34,9 +34,11 @@ describe('PoPToken', () => {
 
   before(() => {
     session = new Session({
-      clientId,
-      idToken,
-      idp: providerUri,
+      authorization: {
+        client_id: clientId,
+        id_token: idToken
+      },
+      issuer: providerUri,
       sessionKey: TestKeys.serializedPrivateKey
     })
 

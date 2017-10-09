@@ -52,15 +52,15 @@ describe('Session', () => {
     })
 
     it('should init the issuer', () => {
-      expect(session.idp).to.equal(providerUri)
+      expect(session.issuer).to.equal(providerUri)
     })
 
     it('should init the client id', () => {
-      expect(session.clientId).to.equal('client123')
+      expect(session.authorization.client_id).to.equal('client123')
     })
 
     it('should init the decoded id token', () => {
-      expect(session.decoded).to.equal(decoded)
+      expect(session.idClaims).to.equal(decoded.payload)
     })
 
     it('should init the session key', () => {
@@ -68,11 +68,11 @@ describe('Session', () => {
     })
 
     it('should init the id token', () => {
-      expect(session.idToken).to.equal('id t0ken')
+      expect(session.authorization.id_token).to.equal('id t0ken')
     })
 
     it('should init the access token', () => {
-      expect(session.accessToken).to.equal('access t0ken')
+      expect(session.authorization.access_token).to.equal('access t0ken')
     })
   })
 })
