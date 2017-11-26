@@ -147,7 +147,7 @@ class Session {
    *
    * @returns {Promise<Response>}
    */
-  fetchWithCredentials (url, options) {
+  fetchWithCredentials (url, options = {}) {
     options.headers = options.headers || {}
 
     return this.bearerTokenFor(url)
