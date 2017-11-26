@@ -31,6 +31,7 @@ const params = {
 }
 
 const rp = {
+  defaults: { popToken: true },
   registration: {
     client_id: 'client123'
   }
@@ -73,6 +74,10 @@ describe('Session', () => {
 
     it('should init the access token', () => {
       expect(session.authorization.access_token).to.equal('access t0ken')
+    })
+
+    it('should init credentialType based on rp popToken semantics flag', () => {
+      expect(session.credentialType).to.equal('pop_token')
     })
   })
 })

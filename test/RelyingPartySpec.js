@@ -456,7 +456,7 @@ describe('RelyingParty', () => {
     it('should return a JSON serialization', () => {
       let rp = new RelyingParty({})
 
-      expect(rp.serialize()).to.equal('{"defaults":{"authenticate":{"response_type":"id_token token","display":"page","scope":["openid"]}},"store":{}}')
+      expect(rp.serialize()).to.equal('{"defaults":{"popToken":false,"authenticate":{"response_type":"id_token token","display":"page","scope":["openid"]}},"store":{}}')
     })
   })
 

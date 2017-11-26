@@ -26,26 +26,28 @@ const onHttpError = require('./onHttpError')
  *      // configuration
  *      // jwks
  *    },
- *    authenticate: {
- *      response_type: 'code',
- *      display: 'popup',
- *      scope: 'openid profile email'
- *    },
- *    register: {
- *      client_name: 'Example',
- *      client_uri: 'https://example.com',
- *      logo_uri: 'https://example.com/assets/logo.png',
- *      redirect_uris: ['https://app.example.com/callback'],
- *      response_types: ['code', 'code id_token token'],
- *      grant_types: ['authorization_code'],
- *      default_max_age: 7200,
- *      post_logout_redirect_uris: ['https://app.example.com']
+ *    defaults: {
+ *      popToken: false,
+ *      authenticate: {
+ *        response_type: 'code',
+ *        display: 'popup',
+ *        scope: 'openid profile email'
+ *      },
+ *      register: {
+ *        client_name: 'Example',
+ *        client_uri: 'https://example.com',
+ *        logo_uri: 'https://example.com/assets/logo.png',
+ *        redirect_uris: ['https://app.example.com/callback'],
+ *        response_types: ['code', 'code id_token token'],
+ *        grant_types: ['authorization_code'],
+ *        default_max_age: 7200,
+ *        post_logout_redirect_uris: ['https://app.example.com']
+ *      },
  *    },
  *    registration: {
  *      // if you have it saved somewhere
  *    },
- *    store: localStorage || req.session,
- *    popup: { width: 400, height: 300 }
+ *    store: localStorage || req.session
  *  })
  *
  *  client.discover() => Promise
@@ -332,7 +334,7 @@ class RelyingParty extends JSONDocument {
    * @returns {Promise<PoPToken>}
    */
   popTokenFor (uri, idToken) {
-    return PoPToken.issueFor(uri, idToken, this)
+    return PoPToken.issueFor(uri, idToken)
   }
 }
 

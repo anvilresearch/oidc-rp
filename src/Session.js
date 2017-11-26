@@ -51,15 +51,21 @@ class Session {
     const RelyingParty = require('./RelyingParty')  // import here due to circular dep
 
     let payload = response.decoded.payload
-    let registration = response.rp.registration
-    let rpAuthOptions = response.rp.authenticate || {}
+
+    let { rp } = response
+
+    let registration = rp.registration
+    let rpAuthOptions = rp.defaults.authenticate || {}
+
+    let credentialType = rpAuthOptions['credential_type'] ||
+      rp.defaults.popToken ? 'pop_token' : 'access_token'
 
     let sessionKey = response.session[RelyingParty.SESSION_PRIVATE_KEY]
 
     let options = {
+      credentialType,
       sessionKey,
       issuer: payload.iss,
-      credentialType: rpAuthOptions['credential_type'],
       authorization: {
         client_id: registration['client_id'],
         access_token: response.params['access_token'],
@@ -84,23 +90,20 @@ class Session {
      * @param url {RequestInfo|string}
      * @param options {object}
      *
-     * @returns {Promise<Response>}
+     * @returns {Function<Promise<Response>>}
      */
     return (url, options) => {
-      return fetch(url, options)
+      return Promise.resolve()
 
-        .then(response => {
-          if (response.status === 401 && this.hasCredentials()) {
-            // Retry with credentials
+        .then(() => {
+          if (this.hasCredentials()) {
             return this.fetchWithCredentials(url, options)
+          } else {
+            return fetch(url, options)
           }
-
-          if (!response.ok) {
-            onHttpError()(response)  // throw error
-          }
-
-          return response
         })
+
+        .then(onHttpError('Error while fetching resource'))
     }
   }
 
@@ -144,7 +147,7 @@ class Session {
    *
    * @returns {Promise<Response>}
    */
-  fetchWithCredentials (url, options) {
+  fetchWithCredentials (url, options = {}) {
     options.headers = options.headers || {}
 
     return this.bearerTokenFor(url)

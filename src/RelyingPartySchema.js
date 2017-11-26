@@ -52,6 +52,14 @@ const RelyingPartySchema = new JSONSchema({
       properties: {
 
         /**
+         * Use Proof of Possession token semantics for the ID Token
+         */
+        popToken: {
+          type: 'boolean',
+          default: false
+        },
+
+        /**
          * Default authentication request parameters
          */
         authenticate: {
